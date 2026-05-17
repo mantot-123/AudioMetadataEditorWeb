@@ -1,7 +1,7 @@
 function MetadataEditorForm() {
   return ( 
     <>
-      <h2>Edit metadata</h2>
+      <h3>Edit metadata</h3>
       <form>
         <div className="my-4">
           <label htmlFor="title" className="form-label">Title:</label>
