@@ -3,13 +3,9 @@ import AudioFilesList from "./AudioFilesList";
 function StartPage() {
   return ( 
     <>
-      <div className="m-4">
-        <h1>Audio File Metadata Editor</h1>
-      </div>
+      <h1 className="m-4">Audio File Metadata Editor</h1>
       <div className="d-flex flex-column">
-        <div className="m-4">
-          <AudioFilesList />
-        </div>
+        <AudioFilesList />
       </div> 
     </>
   );

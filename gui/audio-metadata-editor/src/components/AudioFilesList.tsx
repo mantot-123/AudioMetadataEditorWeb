@@ -1,10 +1,14 @@
 import { Icon } from "@iconify/react";
 import DeleteFileDialog from "./DeleteFileDialog";
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useCurrentFile } from "../context/CurrentFileContext";
 
 function AudioFilesList() {
+  const navigate = useNavigate();
+  const {fileInfo, setCurrentFileName} = useCurrentFile();
+
   const [showFileDelModal, setShowFileDelModal] = useState<boolean>(false);
-  const [selectedFile, setSelectedFile] = useState<string>("<file name here>");
 
   const onDelDialogOpen = (): void => {
     setShowFileDelModal(true);
@@ -19,7 +23,7 @@ function AudioFilesList() {
   };
 
   return ( 
-    <>
+    <div className="my-2 mx-4">
       <h3>Your files</h3>
       <div className="d-flex gap-2 align-items-center">
         <div className="my-2 btn-group">
@@ -51,7 +55,10 @@ function AudioFilesList() {
         <tbody>
           <tr 
             style={ {cursor: "pointer"} }
-            onClick={() => {}}
+            onClick={() => {
+              setCurrentFileName("<file name here>");
+              navigate("/edit");
+            }}
           >
             <td>onestop.wav</td>
             <td>3.67MB</td>
@@ -77,11 +84,11 @@ function AudioFilesList() {
       {/* DELETION DIALOG */}
       <DeleteFileDialog 
         show={showFileDelModal}
-        fileName={selectedFile} 
+        fileName={fileInfo.fileName} 
         onDeleteYes={onFileDeleteYes}
         onDeleteNo={onFileDeleteNo}
       />
-    </>
+    </div>
   );
 }
 

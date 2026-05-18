@@ -9,7 +9,7 @@ type CurrentFile = {
   fileName: string
 };
 
-export default function CurrentFileProvider({ children }: {children: ReactNode}) {
+export default function CurrentFileProvider({ children }: { children: ReactNode }) {
   const [fileInfo, setFileInfo] = useState(() => {
     // fallback value in case the current file info cannot be loaded from storage
     const defaults: CurrentFile = {
@@ -39,10 +39,10 @@ export default function CurrentFileProvider({ children }: {children: ReactNode})
     localStorage.setItem("currentFile", JSON.stringify(fileInfo as object));
   }, [fileInfo]);
 
-  const setFileName = (newFileName: string) => setFileInfo({...fileInfo, fileName: newFileName });
+  const setCurrentFileName = (newFileName: string) => setFileInfo({...fileInfo, fileName: newFileName });
 
   return ( 
-    <CurrentFileContext.Provider value={{ fileInfo, setFileName }}>
+    <CurrentFileContext.Provider value={{ fileInfo, setCurrentFileName }}>
       {children}
     </CurrentFileContext.Provider> 
   );
