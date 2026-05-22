@@ -1,28 +1,32 @@
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 
-import MetadataBrowser from "./MetadataBrowser";
+import MetadataBrowserMain from "./MetadataBrowserMain";
 
+import { useMetadata } from "../context/MetadataContext";
 import { useCurrentFile } from "../context/CurrentFileContext";
 
 function MetadataEditorForm() {
-  const { fileInfo, setFileName } = useCurrentFile();
+  const { fileInfo, setCurrentFileName } = useCurrentFile();
 
+  const {
+    metadata,
+    setId,
+    setTitle,
+    setArtist,
+    setYear,
+    setGenre,
+    setAlbum,
+    setTrackNumber,
+    setDiscNumber,
+    setDateReleased
+  } = useMetadata();
+
+  const [newFileName, setNewFileName] = useState<string>(fileInfo.fileName);
   const [showBrowser, setShowBrowser] = useState<boolean>(false);
-
-  const [fNameInput, setFNameInput] = useState<string>(fileInfo.fileName);
-  const [title, setTitle] = useState<string>("");
-  const [artist, setArtist] = useState<string>("");
-  const [year, setYear] = useState<string>("");
-  const [genre, setGenre] = useState<string>("");
-  const [album, setAlbum] = useState<string>("");
-  const [trackNo, setTrackNo] = useState<string>("");
   
-  const onConfirmSelection = (selected: object) => {
-    setShowBrowser(true);
-  };
-
-  const onCancel = () => {
+  // close the metadata browser
+  const onClose = () => {
     setShowBrowser(false);
   };
 
@@ -38,35 +42,100 @@ function MetadataEditorForm() {
       <form>
         <div className="my-4">
           <label htmlFor="filename" className="form-label">File name:</label>
-          <input className="form-control" placeholder="Enter file name" name="fnameinput" id="fnameinput" />
+          <input 
+            className="form-control" 
+            placeholder="Enter file name" 
+            name="fnameinput" 
+            id="fnameinput" 
+            onChange={(e) => setNewFileName(e.target.value)}
+            value={newFileName}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="title" className="form-label">Title:</label>
-          <input className="form-control" placeholder="Enter title" name="title" id="title" />
+          <input 
+            className="form-control" 
+            placeholder="Enter title" 
+            name="title" 
+            id="title" 
+            onChange={(e) => setTitle(e.target.value)}
+            value={metadata.title ?? ""}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="artist" className="form-label">Artist:</label>
-          <input className="form-control" placeholder="Enter artist" name="artist" id="artist" />
+          <input 
+            className="form-control" 
+            placeholder="Enter artist" 
+            name="artist" 
+            id="artist" 
+            onChange={(e) => setArtist(e.target.value)}
+            value={metadata.artist ?? ""}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="year" className="form-label">Year:</label>
-          <input className="form-control" placeholder="Enter year" name="year" id="year" />
+          <input 
+            className="form-control" 
+            placeholder="Enter year" 
+            name="year" 
+            id="year" 
+            onChange={(e) => setYear(e.target.value)}
+            value={metadata.year ?? ""}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="genre" className="form-label">Genre:</label>
-          <input className="form-control" placeholder="Enter genre" name="genre" id="genre" />
+          <input 
+            className="form-control" 
+            placeholder="Enter genre" 
+            name="genre" 
+            id="genre" 
+            onChange={(e) => setGenre(e.target.value)}
+            value={metadata.genre ?? ""}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="album" className="form-label">Album:</label>
-          <input className="form-control" placeholder="Enter album" name="album" id="album" />
+          <input 
+            className="form-control" 
+            placeholder="Enter album" 
+            name="album" 
+            id="album" 
+            onChange={(e) => setAlbum(e.target.value)}
+            value={metadata.album ?? ""}
+          />
         </div>
         <div className="my-4">
-          <label htmlFor="album" className="form-label">Track #:</label>
-          <input className="form-control" placeholder="Enter track number" name="trackno" id="trackno" />
+          <label htmlFor="trackno" className="form-label">Track #:</label>
+          <input 
+            className="form-control" 
+            placeholder="Enter track number" 
+            name="trackno" 
+            id="trackno" 
+            onChange={(e) => setTrackNumber(e.target.value)}
+            value={metadata.trackNumber ?? ""}
+          />
+        </div>
+        <div className="my-4">
+          <label htmlFor="discno" className="form-label">Disc #:</label>
+          <input 
+            className="form-control" 
+            placeholder="Enter disc number" 
+            name="discno" 
+            id="discno" 
+            onChange={(e) => setDiscNumber(e.target.value)}
+            value={metadata.discNumber ?? ""}
+          />
         </div>
         <div className="my-4">
           <label htmlFor="art" className="form-label">Album art:</label>
-          <input className="form-control" type="file" id="art" name="art" />
+          <input 
+            className="form-control" 
+            type="file" 
+            id="art" 
+            name="art" 
+          />
         </div>
         <div className="my-4 d-flex gap-2">
           <button type="submit" className="btn btn-primary">Save changes</button>
@@ -74,10 +143,9 @@ function MetadataEditorForm() {
         </div>
       </form>
 
-      <MetadataBrowser
+      <MetadataBrowserMain 
         show={showBrowser}
-        onConfirmSelection={onConfirmSelection}
-        onCancel={onCancel}
+        onClose={onClose}
       />
     </> 
   );
