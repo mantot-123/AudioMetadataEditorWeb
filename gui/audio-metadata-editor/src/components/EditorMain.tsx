@@ -3,6 +3,7 @@ import StartPage from "./StartPage";
 import EditAudioPage from "./EditAudioPage";
 import SettingsPage from "./SettingsPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
+import { useMetadata } from "../context/MetadataContext";
 import { useState, useContext } from "react";
 import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router";
 
@@ -11,8 +12,21 @@ function EditorMain() {
 
   const {currentFile, setCurrentFileName} = useCurrentFile();
 
+  const {
+    metadata,
+    setId,
+    setTitle,
+    setArtist,
+    setYear,
+    setGenre,
+    setAlbum,
+    setTrackNumber,
+    setDiscNumber,
+    setDateReleased
+  } = useMetadata();
+
   const goBack = () => {
-    setCurrentFileName("");
+    setCurrentFileName(null);
     navigate("/") 
   };
 

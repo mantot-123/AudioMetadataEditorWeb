@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 export const CurrentFileContext = createContext<any>(null);
 
 type CurrentFile = {
-  fileName: string
+  fileName: string | null
 };
 
 export default function CurrentFileProvider({ children }: { children: ReactNode }) {

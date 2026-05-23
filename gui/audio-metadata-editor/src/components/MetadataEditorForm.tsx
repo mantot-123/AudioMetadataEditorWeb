@@ -48,7 +48,7 @@ function MetadataEditorForm() {
             name="fnameinput" 
             id="fnameinput" 
             onChange={(e) => setNewFileName(e.target.value)}
-            value={newFileName}
+            value={newFileName ?? ""}
           />
         </div>
         <div className="my-4">

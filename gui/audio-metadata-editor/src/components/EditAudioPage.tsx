@@ -9,7 +9,7 @@ function EditAudioPage({ goBack }: { goBack: Function }) {
   const {fileInfo, setCurrentFileName} = useCurrentFile();
 
   useEffect(() => {
-    if (fileInfo.fileName === "") {
+    if ((fileInfo.fileName ?? "") === "") {
       navigate("/");
     }
   }, [fileInfo])
