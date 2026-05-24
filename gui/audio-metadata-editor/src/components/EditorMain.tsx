@@ -10,7 +10,7 @@ import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router
 function EditorMain() {
   const navigate = useNavigate();
 
-  const {currentFile, setCurrentFileName} = useCurrentFile();
+  const {fileInfo, setCurrentFileName} = useCurrentFile();
 
   const {
     metadata,

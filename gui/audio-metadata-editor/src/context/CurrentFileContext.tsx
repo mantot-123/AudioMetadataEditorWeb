@@ -1,16 +1,21 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 
-// stores information about the current file that is opened
-// also saves them on to the disk, so the file can be immediately loaded when the app is reopened
-export const CurrentFileContext = createContext<any>(null);
-
 type CurrentFile = {
   fileName: string | null
 };
 
+type CurrentFileContextType = {
+  fileInfo: CurrentFile | null,
+  setCurrentFileName: (newFileName: string | null) => void
+}
+
+// stores information about the current file that is opened
+// also saves them on to the disk, so the file can be immediately loaded when the app is reopened
+export const CurrentFileContext = createContext<CurrentFileContextType | null>(null);
+
 export default function CurrentFileProvider({ children }: { children: ReactNode }) {
-  const [fileInfo, setFileInfo] = useState(() => {
+  const [fileInfo, setFileInfo] = useState<CurrentFile | null>(() => {
     // fallback value in case the current file info cannot be loaded from storage
     const defaults: CurrentFile = {
       fileName: ""
@@ -39,7 +44,7 @@ export default function CurrentFileProvider({ children }: { children: ReactNode 
     localStorage.setItem("currentFile", JSON.stringify(fileInfo as object));
   }, [fileInfo]);
 
-  const setCurrentFileName = (newFileName: string) => setFileInfo({...fileInfo, fileName: newFileName });
+  const setCurrentFileName = (newFileName: string | null) => setFileInfo({...fileInfo, fileName: newFileName });
 
   return ( 
     <CurrentFileContext.Provider value={{ fileInfo, setCurrentFileName }}>
@@ -48,4 +53,8 @@ export default function CurrentFileProvider({ children }: { children: ReactNode 
   );
 }
 
-export const useCurrentFile = () => useContext(CurrentFileContext);
+export const useCurrentFile = () => {
+  const ctx: CurrentFileContextType | null = useContext(CurrentFileContext);
+  if(!ctx) throw new Error("useCurrentFile must be used within CurrentFileProvider");
+  return ctx;
+};
