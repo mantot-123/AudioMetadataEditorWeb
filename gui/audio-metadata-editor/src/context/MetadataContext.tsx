@@ -30,7 +30,7 @@ type MetadataContextType = {
 export const MetadataContext = createContext<MetadataContextType | null>(null);
 
 export default function MetadataProvider({ children }: { children: ReactNode }) {
-  const [metadata, setMetadata] = useState<Metadata>({
+  const [metadata, setMetadata] = useState<Metadata | null>({
     id: null,
     title: null,
     artist: null,
