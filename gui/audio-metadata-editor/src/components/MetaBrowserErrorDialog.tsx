@@ -1,10 +1,10 @@
-interface Props {
+interface MetaBrowserErrorDialogProps {
   show: boolean,
   message: string,
-  onClose: Function
+  onClose(): void
 }
 
-function MetaBrowserErrorDialog({ show, message, onClose }: Props) {
+function MetaBrowserErrorDialog({ show, message, onClose }: MetaBrowserErrorDialogProps) {
   if (!show) return null;
 
   return (

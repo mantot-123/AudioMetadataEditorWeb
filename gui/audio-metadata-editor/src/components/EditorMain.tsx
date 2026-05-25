@@ -1,6 +1,5 @@
 import StartPage from "./StartPage";
 import EditAudioPage from "./EditAudioPage";
-import SettingsPage from "./SettingsPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useMetadata } from "../context/MetadataContext";
 import { useState, useContext } from "react";
@@ -35,7 +34,6 @@ function EditorMain() {
         <Routes>
           <Route path="/" element={<StartPage />} />
           <Route path="/edit" element={<EditAudioPage goBack={goBack}/>} />
-          <Route path="/settings" element={<SettingsPage goBack={goBack} />} />
         </Routes>
       </div>
     </> 

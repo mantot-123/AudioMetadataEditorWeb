@@ -178,13 +178,13 @@ const SAMPLE_TRACKS = [
 ];
 
 
-interface Props {
+interface MetadataBrowserTableProps {
   initialQuery: string
   initialSelected: object | null,
-  onRowSelect: Function
+  onRowSelect(d: any): void
 }
 
-function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: Props) {
+function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: MetadataBrowserTableProps) {
   const [query, setQuery] = useState<string>(initialQuery);
 
   // keep track of the row that was selected so it gets an "active" status
@@ -212,8 +212,18 @@ function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: Pr
       </form>
 
       {(results.length > 0) ? ( // show the table if found results from the query
-        <div className="table-responsive">
-          <table className="table table-hover align-middle">
+        <div 
+          className="table-responsive border rounded"
+          style={{
+            maxHeight: "min(40vh, 420px)",
+            overflow: "auto",
+          }}>
+          <table 
+            className="table table-hover align-middle"
+            style={{
+              width: "max-content", 
+              minWidth: "960px" 
+            }}>
             <thead>
               <tr>
                 <th>Title</th>

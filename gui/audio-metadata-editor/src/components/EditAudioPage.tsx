@@ -5,7 +5,7 @@ import MetadataEditorForm from "./MetadataEditorForm";
 import MetadataAlbumArt from "./MetadataAlbumArt";
 import { NavLink, useNavigate } from "react-router";
 
-function EditAudioPage({ goBack }: { goBack: Function }) {
+function EditAudioPage({ goBack }: { goBack(): void }) {
   const navigate = useNavigate();
   const { fileInfo, setCurrentFileName } = useCurrentFile(); 
 

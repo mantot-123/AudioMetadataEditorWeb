@@ -44,11 +44,11 @@ function UploadFileDialog({show, onClose, onUpload}: UploadFileDialogProps) {
                 />
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={onClose}>
-                  Cancel
-                </button>
                 <button type="submit" className="btn btn-primary">
                   Add files
+                </button>
+                <button type="button" className="btn btn-light" onClick={onClose}>
+                  Cancel
                 </button>
               </div>
             </form>

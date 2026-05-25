@@ -9,7 +9,7 @@ import MetaBrowserErrorDialog from "./MetaBrowserErrorDialog";
 
 interface MetadataBrowserProps {
   show: boolean,
-  onClose: Function,
+  onClose(): void,
 }
 
 // display the browser as a modal
@@ -70,8 +70,8 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
                 
                 <MetadataBrowserTable 
                   initialQuery={query}
-                  onRowSelect={onRowSelect}
                   initialSelected={selected}
+                  onRowSelect={onRowSelect}
                 />
 
               </div>
