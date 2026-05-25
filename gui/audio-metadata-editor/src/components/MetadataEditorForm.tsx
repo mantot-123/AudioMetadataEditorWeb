@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import { useState } from "react";
 
 import MetadataBrowserMain from "./MetadataBrowserMain";
+import DeleteFileDialog from "./DeleteFileDialog";
 
 import { useMetadata } from "../context/MetadataContext";
 import { useCurrentFile } from "../context/CurrentFileContext";
@@ -23,18 +24,33 @@ function MetadataEditorForm() {
   } = useMetadata();
 
   const [newFileName, setNewFileName] = useState<string>(fileInfo.fileName);
-  const [showBrowser, setShowBrowser] = useState<boolean>(false);
+  const [showMetaBrowser, setShowMetaBrowser] = useState<boolean>(false);
+
+  const [showFileDelModal, setShowFileDelModal] = useState<boolean>(false);
+
+  const onDelDialogOpen = (): void => {
+    setShowFileDelModal(true);
+  };
+
+  const onFileDeleteYes = (): void => {
+    // TODO delete the file from disk
+    setShowFileDelModal(false);
+  };
+
+  const onFileDeleteNo = (): void => {
+    setShowFileDelModal(false);
+  };
   
   // close the metadata browser
-  const onClose = () => {
-    setShowBrowser(false);
+  const onMetaBrowserClose = () => {
+    setShowMetaBrowser(false);
   };
 
   return (
     <>
       <button 
-        className="btn btn-light d-flex gap-2 align-items-center"
-        onClick={() => setShowBrowser(true)}
+        className="btn btn-dark d-flex gap-2 align-items-center"
+        onClick={() => setShowMetaBrowser(true)}
       >
         <Icon icon="material-symbols:search" />
         Search in metadata browser...
@@ -140,12 +156,27 @@ function MetadataEditorForm() {
         <div className="my-4 d-flex gap-2">
           <button type="submit" className="btn btn-primary">Save changes</button>
           <button type="reset" className="btn">Clear</button>
+          <button
+            type="button"
+            className="btn btn-outline-danger d-flex gap-2 align-items-center"
+            onClick={onDelDialogOpen}>
+            <Icon icon="material-symbols:delete-outline" fontSize="20" />
+            Delete file
+          </button>
         </div>
       </form>
 
       <MetadataBrowserMain 
-        show={showBrowser}
-        onClose={onClose}
+        show={showMetaBrowser}
+        onClose={onMetaBrowserClose}
+      />
+
+      {/* DELETION DIALOG */}
+      <DeleteFileDialog
+        show={showFileDelModal}
+        fileName={fileInfo.fileName}
+        onDeleteYes={onFileDeleteYes}
+        onDeleteNo={onFileDeleteNo}
       />
     </> 
   );

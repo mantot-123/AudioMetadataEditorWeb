@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import MetadataEditorForm from "./MetadataEditorForm";
@@ -6,15 +7,16 @@ import { NavLink, useNavigate } from "react-router";
 
 function EditAudioPage({ goBack }: { goBack: Function }) {
   const navigate = useNavigate();
-  const {fileInfo, setCurrentFileName} = useCurrentFile();
+  const { fileInfo, setCurrentFileName } = useCurrentFile(); 
 
   useEffect(() => {
     if ((fileInfo.fileName ?? "") === "") {
       navigate("/");
     }
-  }, [fileInfo])
+  }, [fileInfo]);
 
   return (
+
     <div className="m-4">
       <h1>Edit Metadata</h1>
       <button className="btn btn-link" onClick={() => goBack()}>&lt;&lt; Back</button>
