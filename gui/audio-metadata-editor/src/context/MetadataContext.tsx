@@ -25,22 +25,26 @@ type MetadataContextType = {
   setTrackNumber: (trackNumber: string | null) => void,
   setDiscNumber: (discNumber: string | null) => void,
   setDateReleased: (dateReleased: string | null) => void
+  resetMetadata: () => void
 }
 
 export const MetadataContext = createContext<MetadataContextType | null>(null);
 
+// empty metadata
+const INITIAL_METADATA: Metadata = {
+  id: null,
+  title: null,
+  artist: null,
+  year: null,
+  genre: null,
+  album: null,
+  trackNumber: null,
+  discNumber: null,
+  dateReleased: null
+};
+
 export default function MetadataProvider({ children }: { children: ReactNode }) {
-  const [metadata, setMetadata] = useState<Metadata | null>({
-    id: null,
-    title: null,
-    artist: null,
-    year: null,
-    genre: null,
-    album: null, 
-    trackNumber: null,
-    discNumber: null,
-    dateReleased: null
-  });
+  const [metadata, setMetadata] = useState<Metadata | null>(INITIAL_METADATA);
   
   // setter methods for each metadata field
   const setId = (id: number | null) => setMetadata(metadata => ({ ...metadata, id: id}))
@@ -53,8 +57,11 @@ export default function MetadataProvider({ children }: { children: ReactNode }) 
   const setDiscNumber = (discNumber: string | null) => setMetadata(metadata => ({ ...metadata, discNumber: discNumber }));
   const setDateReleased = (dateReleased: string | null) => setMetadata(metadata => ({ ...metadata, dateReleased: dateReleased }));
 
+  // revert metadata to empty state
+  const resetMetadata = () => setMetadata(INITIAL_METADATA);
+
   return ( 
-    <MetadataContext.Provider value={ { metadata, setId, setTitle, setArtist, setYear, setGenre, setAlbum, setTrackNumber, setDiscNumber, setDateReleased } }>
+    <MetadataContext.Provider value={ { metadata, setId, setTitle, setArtist, setYear, setGenre, setAlbum, setTrackNumber, setDiscNumber, setDateReleased, resetMetadata } }>
       {children}
     </MetadataContext.Provider>  
   );

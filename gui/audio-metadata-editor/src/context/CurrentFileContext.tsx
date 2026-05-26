@@ -8,7 +8,12 @@ type CurrentFile = {
 type CurrentFileContextType = {
   fileInfo: CurrentFile | null,
   setCurrentFileName: (newFileName: string | null) => void
+  resetCurrentFile: () => void
 }
+
+const INITIAL_CURRENT_FILE: CurrentFile = {
+  fileName: null
+};
 
 // stores information about the current file that is opened
 // also saves them on to the disk, so the file can be immediately loaded when the app is reopened
@@ -17,9 +22,7 @@ export const CurrentFileContext = createContext<CurrentFileContextType | null>(n
 export default function CurrentFileProvider({ children }: { children: ReactNode }) {
   const [fileInfo, setFileInfo] = useState<CurrentFile | null>(() => {
     // fallback value in case the current file info cannot be loaded from storage
-    const defaults: CurrentFile = {
-      fileName: ""
-    };
+    const defaults: CurrentFile = INITIAL_CURRENT_FILE;
 
     // check if a "currentFile" key exists in the local storage
     // if yes, load that file
@@ -45,9 +48,10 @@ export default function CurrentFileProvider({ children }: { children: ReactNode 
   }, [fileInfo]);
 
   const setCurrentFileName = (newFileName: string | null) => setFileInfo({...fileInfo, fileName: newFileName });
+  const resetCurrentFile = () => setFileInfo(INITIAL_CURRENT_FILE);
 
   return ( 
-    <CurrentFileContext.Provider value={{ fileInfo, setCurrentFileName }}>
+    <CurrentFileContext.Provider value={{ fileInfo, setCurrentFileName, resetCurrentFile }}>
       {children}
     </CurrentFileContext.Provider> 
   );
