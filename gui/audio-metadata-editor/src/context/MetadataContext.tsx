@@ -44,7 +44,7 @@ const INITIAL_METADATA: Metadata = {
 };
 
 export default function MetadataProvider({ children }: { children: ReactNode }) {
-  const [metadata, setMetadata] = useState<Metadata | null>(INITIAL_METADATA);
+  const [metadata, setMetadata] = useState<Metadata>(INITIAL_METADATA);
   
   // setter methods for each metadata field
   const setId = (id: number | null) => setMetadata(metadata => ({ ...metadata, id: id}))
