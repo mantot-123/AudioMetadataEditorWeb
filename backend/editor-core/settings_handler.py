@@ -1,0 +1,2 @@
+class SettingsHandler:
+    pass

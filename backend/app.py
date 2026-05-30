@@ -1,9 +1,11 @@
+import os
+import mutagen
 from flask import Flask
 
 app = Flask(__name__)
 
 @app.route("/upload")
-def uploadAudioFile():
+def upload_file():
     # TODO HANDLE FILE UPLOAD
     return {"file": "song.mp3", "contentType": "audio/mp3", "uploaded": True}
 
