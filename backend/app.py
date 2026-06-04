@@ -2,11 +2,19 @@ import os
 import mimetypes
 import mutagen
 import traceback
+import time
+import musicbrainzngs
 from flask import Flask, request
 
-from editor_core import (musicbrainz_handler, 
+from editor_core import (metadata_browser_handler, 
                         mutagen_handler, 
                         settings_handler)
+
+import ssl
+import certifi
+
+# allow access to SSL certificates, allowing use of external APIs (including MusicBrainz)
+ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 AUDIO_FILES_DIR = "../audio_files"
 
@@ -18,6 +26,13 @@ AUDIO_TYPES = {
     '.ogg',
     ".wma"
 }
+
+# set user agent for musicbrainz API to identify the application
+musicbrainzngs.set_useragent(
+    "Odio",
+    "1.0.0",
+    "https://github.com/mantot-123/AudioMetadataEditorWeb/"
+)
 
 app = Flask(__name__)
 
@@ -199,6 +214,19 @@ def delete_file():
         return {"error": str(e)}
 
 
+@app.route("/browse-metadata", methods=["GET"])
+def browse_metadata():
+    try:
+        query = request.args.get("query")
+        result = musicbrainzngs.search_recordings(query, limit=20)
+        time.sleep(1)
+        return result, 200
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": "Unable to fetch metadata tag results."}, 400
+
+
 @app.route("/read-metadata")
 def read_metadata():
     pass
@@ -207,12 +235,6 @@ def read_metadata():
 @app.route("/apply-metadata")
 def apply_metadata():
     pass
-
-
-@app.route("/browse-metadata")
-def browse_metadata():
-    pass
-
 
 
 if __name__ == "__main__":
