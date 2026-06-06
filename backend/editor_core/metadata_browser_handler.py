@@ -7,7 +7,7 @@ from datetime import datetime
 # UTILISES MUSICBRAINZ'S API
 
 # limit the number of results that can be returned from a search query
-MUSICBRAINZ_RESULT_LIMIT = 10
+MUSICBRAINZ_RESULT_LIMIT = 50
 
 # match score - confidence rating of how well the results match with the query
 # higher matching score - strong match
@@ -15,22 +15,17 @@ MUSICBRAINZ_RESULT_LIMIT = 10
 MUSICBRAINZ_MIN_MATCH_SCORE = 70
 
 # search for recordings of the same title and artist and its related releases
-def search_recordings(data):
+def search_musicbrainz_recordings(data):
     # search metadata relating to the track
     fields = data.get("query", {})
     query = {}
 
-    if "title" in fields: 
-        query["recording"] = fields["title"]
-
-    if "artist" in fields: 
-        query["artist"] = fields["artist"]
-
-    if "genre" in fields: 
-        query["tag"] = fields["genre"]
-
-    if "year" in fields:
-        query["date"] = fields["year"]
+    # map each metadata field from request to musicbrainz search query fields
+    if "title" in fields: query["recording"] = fields["title"]
+    if "artist" in fields: query["artist"] = fields["artist"]
+    if "album" in fields: query["release"] = fields["album"]
+    if "genre" in fields: query["tag"] = fields["genre"]
+    if "year" in fields: query["date"] = fields["year"]
 
     try:
         results = musicbrainzngs.search_recordings(**query, limit=MUSICBRAINZ_RESULT_LIMIT)
@@ -46,10 +41,22 @@ def search_recordings(data):
         output = []
 
         for rec in recordings:
-            artists = [{
-                "id": a.get("artist", {}).get("id", None), # use artist MBID
-                "name": a.get("name", None)
-            } for a in rec.get("artist-credit", [])]
+            if not isinstance(rec, dict):
+                continue
+
+            # get artist information
+            artists = []
+            for a in rec.get("artist-credit", []):
+                if not isinstance(a, dict):
+                    continue
+
+                artist = a.get("artist", {})
+                id = artist.get("id", None)
+                name = a.get("name", None)
+                artists.append({
+                    "id": id,
+                    "name": name
+                })
             
             # if no release is available, only supply base MBID, title and artist info instead
             if not rec.get("release-list"):
@@ -58,7 +65,7 @@ def search_recordings(data):
                     "title": rec.get("title", None),
                     "artist": artists,
                     "year": None,
-                    "genre": None,
+                    "genre": [],
                     "album": None,
                     "albumId": None,
                     "trackNumber": None,
@@ -72,6 +79,7 @@ def search_recordings(data):
                 genre_list = [t.get("name", "") for t in release.get("tag-list", [])]
 
                 # medium information (e.g. disc, vinyl)
+                # only get the first medium info in the medium-list
                 medium_list = release.get("medium-list", [])
                 medium = medium_list[0] if medium_list else {}
 
@@ -94,15 +102,29 @@ def search_recordings(data):
                     "discNumber": medium.get("number", None),
                     "dateReleased": date
                 })
+
     except Exception as e:
         traceback.print_exc()
-        return {}
+        return {
+            "error": f"Failed to fetch tagging information: {str(e)}",
+            "results": []
+        }
 
-    return output
+    return {
+        "results": output
+    }
+
+
+def get_musicbrainz_release_data(**query_args):
+    pass
+
+
+def get_musicbrainz_artist_data(**query_args):
+    pass
 
 
 # method to test musicbrainz's API.
-def api_search(data):
+def api_search_recordings(data):
     # search metadata relating to the track
     fields = data.get("query", {})
 

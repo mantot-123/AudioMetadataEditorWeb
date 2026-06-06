@@ -223,7 +223,8 @@ def browse_metadata():
             return {"error": "No data provided."}, 400
         
         # search metadata relating to the track
-        results = metadata_browser_handler.search_recordings(data)
+        # results = metadata_browser_handler.api_search_recordings(data)
+        results = metadata_browser_handler.search_musicbrainz_recordings(data)
 
         if not results:
             return results, 200
