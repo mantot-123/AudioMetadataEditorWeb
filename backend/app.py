@@ -6,7 +6,7 @@ import time
 import musicbrainzngs
 from flask import Flask, request
 
-from editor_core import (metadata_browser_handler, 
+from editor_core import (musicbrainz_handler, 
                         mutagen_handler, 
                         settings_handler)
 
@@ -223,8 +223,8 @@ def browse_metadata():
             return {"error": "No data provided."}, 400
         
         # search metadata relating to the track
-        # results = metadata_browser_handler.api_search_recordings(data)
-        results = metadata_browser_handler.search_musicbrainz_recordings(data)
+        # results = musicbrainz_handler.api_search_recordings(data)
+        results = musicbrainz_handler.search_musicbrainz_recordings(data)
 
         if not results:
             return results, 200
