@@ -214,13 +214,21 @@ def delete_file():
         return {"error": str(e)}
 
 
-@app.route("/browse-metadata", methods=["GET"])
+@app.route("/browse-metadata", methods=["POST", "GET"])
 def browse_metadata():
     try:
-        query = request.args.get("query")
-        result = musicbrainzngs.search_recordings(query, limit=20)
-        time.sleep(1)
-        return result, 200
+        data = request.get_json()
+
+        if not data:
+            return {"error": "No data provided."}, 400
+        
+        # search metadata relating to the track
+        results = metadata_browser_handler.search_recordings(data)
+
+        if not results:
+            return results, 200
+
+        return results, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -234,6 +242,11 @@ def read_metadata():
 
 @app.route("/apply-metadata")
 def apply_metadata():
+    pass
+
+
+@app.route("/apply-album-art")
+def apply_album_art():
     pass
 
 
