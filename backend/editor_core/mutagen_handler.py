@@ -240,12 +240,9 @@ class MutagenHandler:
 
         except Exception as e:
             traceback.print_exc()
-            return {
-                "error": str(e),
-                "result": {}
-            }
+            return {}
         
-        return {"result": result}
+        return result
     
 
     def set_metadata(self, tags):
@@ -284,8 +281,21 @@ class MutagenHandler:
         # for text-based tags, they are always stored in a list for consistency, 
         # even if they only store 1 value most of the time in most audio files
         print(raw_key)
-        tag = tags.get(raw_key, None)
-        
+
+        # multiple COMM, USLT and APIC frames can exist in a single file, 
+        # each with a different language and description.
+        # e.g. COMM:eng, COMM:jp, USLT:jp, APIC:cover, APIC:icon etc.
+        tag = None
+
+        if raw_key in ["COMM", "USLT", "APIC"]:
+            # find the first frame that starts with a special key like COMM, USLT or APIC
+            for key in tags.keys():
+                if key.startswith(raw_key):
+                    tag = tags.get(key, None)
+                    break
+        else:          
+            tag = tags.get(raw_key, None) # only raw text frames
+
         if tag is None: return None
 
         ## COMM - comments, USLT - song lyrics, APIC - album art 

@@ -268,11 +268,14 @@ def read_metadata():
         reader = MutagenHandler(filepath)
         results = reader.read_metadata()
 
-        return results, 200
+        return { "result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": "Unable to fetch audio file metadata"}, 400
+        return {
+            "error": f"Unable to fetch audio file metadata: {str(e)}",
+            "result": {}
+        }, 400
 
 
 @app.route("/get-album-art")
