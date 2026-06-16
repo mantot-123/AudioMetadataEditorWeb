@@ -130,17 +130,11 @@ def api_search_recordings(data):
 
     query = {}
 
-    if "title" in fields: 
-        query["recording"] = fields["title"]
-
-    if "artist" in fields: 
-        query["artist"] = fields["artist"]
-
-    if "genre" in fields: 
-        query["tag"] = fields["genre"]
-
-    if "year" in fields:
-        query["date"] = fields["year"]
+    if "title" in fields: query["recording"] = fields["title"]
+    if "artist" in fields: query["artist"] = fields["artist"]
+    if "album" in fields: query["release"] = fields["album"]
+    if "genre" in fields: query["tag"] = fields["genre"]
+    if "year" in fields: query["date"] = fields["year"]
 
     results = musicbrainzngs.search_recordings(**query, limit=MUSICBRAINZ_RESULT_LIMIT)
 
