@@ -215,18 +215,19 @@ class MutagenHandler:
             tag_map = AUDIO_TAG_MAPPING[file_type]
 
             # get audio stream information (bitrate, sample rate, audio channel count etc.)
+            # exists in every audio file type
             result = {
                 "filepath": self.audio_src,
                 "format": file_type,
                 "duration": round(audio_file.info.length, 2),
-                "bitrate":  getattr(audio_file.info, "bitrate", None),
+                "bitrate":  getattr(audio_file.info, "bitrate", None), # "audio_file.info" for basic audio stream info
                 "channels": getattr(audio_file.info, "channels", None),
                 "sample_rate": getattr(audio_file.info, "sample_rate", None),
                 "tags": {}
             }
 
             # check if there are no tags in the file
-            if audio_file.tags is None:
+            if audio_file.tags is None: # "audio_file.tags" for user-defined metadata tags
                 return result
             
             for name, key in tag_map.items():
@@ -330,14 +331,14 @@ class MutagenHandler:
         # they have an encoding type (UTF-8, ASCII) + the actual text contents stored in binary
         tag_val = tag.text[0]
 
-        # ID3 subrevisions
-        # v2.4 - uses TDRC for date and time combined. in mutagen, it returns a TDRC object.
+        # getting release years
+        # ID3v2.4 - uses TDRC for date and time combined. in mutagen, it returns a TDRC object.
         # make sure to only parse the year using the "year" property to only get the recording year of the file.
         if raw_key == "TDRC":
             if tag and tag.text:
                 return str(tag.text[0].year)
             
-        # v2.3 - uses TYER to get the year value.
+        # ID3v2.3 - uses TYER to get the year value.
         if raw_key == "TYER":
             if tag and tag.text:
                 return str(tag.text[0])
@@ -346,7 +347,11 @@ class MutagenHandler:
 
 
     def _get_vorbis_field(self, tags, fmt, raw_key):
-        pass
+        # note with vorbis fields
+        # multiple values can be mapped to the same vorbis field
+        # in mutagen, each key would store these values in a list, even if there is only 1 value for that key
+        field = tags.get(raw_key, None)
+        return field[0] if field else None
 
 
     def _get_mp4_field(self, tags, fmt, raw_key):
