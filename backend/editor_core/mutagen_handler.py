@@ -395,7 +395,33 @@ class MutagenHandler:
         return val 
 
     def _get_asf_field(self, tags, fmt, raw_key):
-        pass
+        tag = tags.get(raw_key, None)
+        val = tag[0] if tag else None
+        
+        # WMA cover art
+        if raw_key == AUDIO_TAG_MAPPING["wma"]["cover_art"]:
+            if not val: return None
+            return {
+                "mime": val.mime,
+                "art_type": val.type,
+                "desc": val.description
+            }
+
+        val_str = str(val) if val else None
+        # WMA track/disc number
+        if raw_key == AUDIO_TAG_MAPPING["wma"]["track_number"]:
+            return {
+                "track_number": int(val_str.split("/")[0]) if "/" in val_str else val,
+                "total_tracks": int(val_str.split("/")[1]) if "/" in val_str else None
+            }
+        
+        if raw_key == AUDIO_TAG_MAPPING["wma"]["disc_number"]:
+            return {
+                "disc_number": int(val_str.split("/")[0]) if "/" in val_str else val,
+                "total_discs": int(val_str.split("/")[1]) if "/" in val_str else None
+            }
+        
+        return val_str
 
 
     '''
