@@ -250,21 +250,24 @@ class MutagenHandler:
         pass
 
 
+    def _set_field(self, tags, fmt, field_name, raw_key, value):
+        pass
+
     def _get_field(self, tags, fmt, field_name, raw_key):
-        id3_exts = ["mp3", "aiff", "wav"]
-        vorbis_exts = ["flac", "ogg"]
-        mp4_exts = ["mp4"]
+        id3_types = ["mp3", "aiff", "wav"]
+        vorbis_types = ["flac", "ogg"]
+        mp4_types = ["mp4"]
         asf_exts = ["wma"]
         
-        if fmt in id3_exts:
+        if fmt in id3_types:
             # todo id3 tag reading
             return self._get_id3_field(tags, fmt, raw_key)
         
-        elif fmt in vorbis_exts:
+        elif fmt in vorbis_types:
             # todo vorbis tag reading
             return self._get_vorbis_field(tags, fmt, raw_key)
 
-        elif fmt in mp4_exts:
+        elif fmt in mp4_types:
             # todo mp4 tag reading
             return self._get_mp4_field(tags, fmt, raw_key)
 
@@ -307,7 +310,10 @@ class MutagenHandler:
         is_comment = raw_key.startswith("COMM")
         is_lyrics = raw_key.startswith("USLT")
         is_cover_art = raw_key.startswith("APIC")
-        print(is_comment, is_lyrics, is_cover_art)
+        is_track_no = raw_key.startswith("TRCK")
+        is_disc_no = raw_key.startswith("TPOS")
+
+        print(is_comment, is_lyrics, is_cover_art, is_track_no, is_disc_no)
         if is_comment:
             return {
                 "lang": tag.lang,
@@ -325,6 +331,16 @@ class MutagenHandler:
                 "mime": tag.mime,
                 "art_type": tag.type,
                 "desc": tag.desc 
+            }
+        elif is_track_no:
+            return {
+                "track_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
+                "total_tracks": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
+            }
+        elif is_disc_no:
+            return {
+                "disc_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
+                "total_discs": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
             }
 
         # for text metadata
@@ -355,8 +371,28 @@ class MutagenHandler:
 
 
     def _get_mp4_field(self, tags, fmt, raw_key):
-        pass
+        field = tags.get(raw_key, None)
+        val = field[0] if field else None
 
+        # COVER ART is stored as a list of MP4Cover objects, which contain the image data and format
+        if raw_key == AUDIO_TAG_MAPPING["mp4"]["cover_art"]:
+            return {}
+
+        # check if the field is a track number or disc number
+        if isinstance(val, tuple):
+            if raw_key == AUDIO_TAG_MAPPING["mp4"]["track_number"]:
+                return {
+                    "track_number": val[0],
+                    "total_tracks": val[1]
+                }
+            
+            if raw_key == AUDIO_TAG_MAPPING["mp4"]["disc_number"]:
+                return {
+                    "disc_number": val[0],
+                    "total_discs": val[1]
+                }
+
+        return val 
 
     def _get_asf_field(self, tags, fmt, raw_key):
         pass
