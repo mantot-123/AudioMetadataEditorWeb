@@ -2,6 +2,7 @@ import os
 import mutagen
 import traceback
 from mutagen.id3 import ID3
+from mutagen.mp4 import MP4, MP4Cover
 
 # MUTAGEN HANDLER FOR AUDIO FILE TAGGING
 
@@ -376,7 +377,12 @@ class MutagenHandler:
 
         # COVER ART is stored as a list of MP4Cover objects, which contain the image data and format
         if raw_key == AUDIO_TAG_MAPPING["mp4"]["cover_art"]:
-            return {}
+            if not val: return None
+            return {
+                "mime": "image/jpeg" if val.imageformat == MP4Cover.FORMAT_JPEG else "image/png", # mp4 album art only supports JPEG and PNG formats
+                "art_type": None,  # not supported - mp4 does not have a field for art types and description
+                "desc": None 
+            }
 
         # check if the field is a track number or disc number
         if isinstance(val, tuple):
@@ -411,13 +417,13 @@ class MutagenHandler:
         # WMA track/disc number
         if raw_key == AUDIO_TAG_MAPPING["wma"]["track_number"]:
             return {
-                "track_number": int(val_str.split("/")[0]) if "/" in val_str else val,
+                "track_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
                 "total_tracks": int(val_str.split("/")[1]) if "/" in val_str else None
             }
         
         if raw_key == AUDIO_TAG_MAPPING["wma"]["disc_number"]:
             return {
-                "disc_number": int(val_str.split("/")[0]) if "/" in val_str else val,
+                "disc_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
                 "total_discs": int(val_str.split("/")[1]) if "/" in val_str else None
             }
         
