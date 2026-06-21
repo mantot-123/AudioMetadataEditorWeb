@@ -283,9 +283,54 @@ def get_album_art():
     pass
 
 
-@app.route("/apply-metadata")
+@app.route("/apply-metadata", methods=["POST", "GET"])
 def apply_metadata():
-    pass
+    try:
+        data = request.get_json()
+        
+        if not data:
+            raise ValueError("No data provided.")
+        
+        if not "filename" in data or not data["filename"]:
+            raise ValueError("File name is required.")
+        
+        if not "new_tags" in data or not data["new_tags"]:
+            raise ValueError("No new tags are provided.")
+        
+        filename = data["filename"]
+        new_tags = data["new_tags"]
+
+        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
+        filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, data["filename"]))
+
+        # check if the file exists
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"File {filepath} does not exist.")
+        
+        # prevent directory traversal attacks
+        if not filepath.startswith(directory_abs):
+            raise Exception("Access denied: Invalid file name.")
+
+        # check file write access permissions
+        if not os.access(filepath, os.W_OK):
+            raise Exception(f"Insufficient write permissions for file {filepath}")
+        
+        file_ext = os.path.splitext(filename)[1].lower()
+        if not file_ext in AUDIO_TYPES:
+            raise Exception(f"Write failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+
+        writer = MutagenHandler(filepath)
+        results = writer.set_metadata(data["new_tags"])
+
+        return { "result": results }, 200
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            "error": f"Unable to write audio metadata: {str(e)}",
+            "result": {}
+        }, 400
+
 
 
 @app.route("/apply-album-art")
