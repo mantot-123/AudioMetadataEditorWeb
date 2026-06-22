@@ -7,7 +7,7 @@ from mutagen.mp4 import MP4, MP4Cover
 from mutagen.oggvorbis import OggVorbis
 from mutagen.asf import ASF, ASFUnicodeAttribute, ASFByteArrayAttribute
 from mutagen.flac import FLAC
-from mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE
+from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE
 
 # MUTAGEN HANDLER FOR AUDIO FILE TAGGING
 class MutagenHandler:

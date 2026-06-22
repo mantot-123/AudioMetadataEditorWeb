@@ -7,10 +7,12 @@ import musicbrainzngs
 from flask import Flask, request
 
 from editor_core import (musicbrainz_handler, 
+                        album_art_handler,
                         mutagen_handler, 
                         settings_handler)
 
 from editor_core.mutagen_handler import MutagenHandler
+from editor_core.album_art_handler import AlbumArtHandler
 
 import ssl
 import certifi
@@ -280,7 +282,41 @@ def read_metadata():
 
 @app.route("/get-album-art")
 def get_album_art():
-    pass
+    try:
+        filename = request.args.get("filename")
+        if not filename:
+            raise ValueError("File name is required")
+        
+        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
+        filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
+
+        # check if the file exists
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"File {filepath} does not exist.")
+        
+        # prevent directory traversal attacks
+        if not filepath.startswith(directory_abs):
+            raise Exception("Access denied: Invalid file name.")
+
+        # check file read access permissions - if reading metadata is allowed on the file
+        if not os.access(filepath, os.R_OK):
+            raise Exception(f"Insufficient read permissions for file {filepath}")
+        
+        file_ext = os.path.splitext(filename)[1].lower()
+        if not file_ext in AUDIO_TYPES:
+            raise Exception(f"Read failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+
+        reader = AlbumArtHandler(filepath)
+        results = reader.get_cover_art()
+
+        return { "result": results }, 200
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            "error": f"Unable to read album art metadata: {str(e)}",
+            "result": {}
+        }, 400
 
 
 @app.route("/apply-metadata", methods=["POST", "GET"])
