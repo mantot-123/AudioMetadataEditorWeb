@@ -5,7 +5,7 @@ import { useMetadata } from "../context/MetadataContext";
 import { useState, useEffect, useContext } from "react";
 import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router";
 
-function EditorMain() {
+function EditorMainPage() {
   const navigate = useNavigate();
 
   const {
@@ -53,4 +53,4 @@ function EditorMain() {
   );
 }
 
-export default EditorMain;
+export default EditorMainPage;

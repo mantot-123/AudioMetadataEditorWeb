@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import EditorMain from "./components/EditorMain";
+import EditorMainPage from "./components/EditorMainPage";
 import './App.css'
 import CurrentFileProvider from './context/CurrentFileContext';
 import MetadataProvider from "./context/MetadataContext";
@@ -11,7 +11,7 @@ function App() {
       <BrowserRouter>
         <CurrentFileProvider>
           <MetadataProvider>
-            <EditorMain />
+            <EditorMainPage />
           </MetadataProvider>
         </CurrentFileProvider>
       </BrowserRouter>
