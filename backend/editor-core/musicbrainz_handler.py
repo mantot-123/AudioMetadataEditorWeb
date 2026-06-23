@@ -1,4 +1,0 @@
-# MUSICBRAINZ HANDLER FOR AUDIO METADATA TAG LOOKUP
-
-class MusicBrainzHandler:
-    pass
