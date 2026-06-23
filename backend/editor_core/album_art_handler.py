@@ -1,10 +1,11 @@
+import struct
 import base64
 import os
 import mutagen
 import traceback
-from mutagen.id3 import ID3, ID3NoHeaderError
+from mutagen.id3 import ID3, APIC, ID3NoHeaderError
 from mutagen.mp4 import MP4, MP4Cover
-from mutagen.asf import ASF
+from mutagen.asf import ASF, ASFByteArrayAttribute
 from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE
 
 class AlbumArtHandler:
@@ -13,7 +14,6 @@ class AlbumArtHandler:
 
     # GETTER methods for cover art
     def get_cover_art(self):
-        result = {}
         try:
             ext = os.path.splitext(self.audio_src)[1].lower()
 
@@ -44,7 +44,7 @@ class AlbumArtHandler:
 
         except Exception as e:
             traceback.print_exc()
-            return {}
+            return {"error": str(e)}
 
 
     def _get_id3_art(self):
@@ -128,16 +128,86 @@ class AlbumArtHandler:
 
         return art_data
 
+    # SETTER methods for cover art
+    def set_cover_art(self, data):
+        try:
+            ext = os.path.splitext(self.audio_src)[1].lower()
+            file_type = EXT_TO_TYPE[ext]
 
-    # setter methods for cover art
-    def _set_cover_art(self):
-        pass
+            id3_types = ["mp3", "aiff", "wav"]
+            mp4_types = ["mp4"]
+            asf_exts = ["wma"]
 
-    def _set_id3_art(self):
-        pass
+            if file_type in id3_types:
+                # todo id3 tag reading
+                return self._set_id3_art(data)
 
-    def _set_mp4_art(self):
-        pass
+            elif file_type in mp4_types:
+                # todo mp4 tag reading
+                return self._set_mp4_art(data)
 
-    def _set_asf_art(self):
-        pass
+            elif file_type in asf_exts:
+                # todo asf tag reading
+                return self._set_asf_art(data)
+
+            else:
+                raise Exception("Unsupported audio file type.")
+
+        except Exception as e:
+            traceback.print_exc()
+            return {"error": str(e)}
+
+    def _set_id3_art(self, data):
+        try:
+            audio_id3 = ID3(self.audio_src)
+        except ID3NoHeaderError:
+            audio_id3 = ID3()
+        
+        audio_id3.delall("APIC") # clear all existing APIC frames
+
+        audio_id3["APIC:"] = APIC(
+            encoding=3, # utf-8 encoding
+            mime=data["mime"],
+            type=3, # for front cover
+            desc="",
+            data=data["img"] # insert raw image data 
+        )
+
+        # use id3v2.3 so it stays compatible with legacy players
+        audio_id3.save(self.audio_src, v2_version=3)
+
+
+    def _set_mp4_art(self, data):
+        audio_mp4 = MP4(self.audio_src)
+        
+        fmt = MP4Cover.FORMAT_JPEG if data["mime"] in ["image/jpeg", "image/jpg"] else MP4Cover.FORMAT_PNG
+
+        tag_name = AUDIO_TAG_MAPPING["mp4"]["cover_art"]
+
+        audio_mp4[tag_name] = [
+            MP4Cover(data["img"], fmt)
+        ]
+
+        audio_mp4.save(self.audio_src)
+        
+
+    def _set_asf_art(self, data):
+        audio_asf = ASF(self.audio_src)
+
+        tag_name = AUDIO_TAG_MAPPING["wma"]["cover_art"]
+
+        mime = data["mime"].encode("utf-16-le")
+        description = "".encode("utf-16-le")
+        art_type = 3 # for front cover
+
+        # WM/Picture binary structure
+        picture = (
+            struct.pack("<bi", art_type, len(data["img"])) +
+            mime + b"\x00\x00" +
+            description + b"\x00\x00" +
+            data["img"]
+        )
+
+        audio_asf[tag_name] = [ASFByteArrayAttribute(picture)]
+
+        audio_asf.save()

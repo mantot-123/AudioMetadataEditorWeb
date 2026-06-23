@@ -31,6 +31,12 @@ AUDIO_TYPES = {
     ".wma"
 }
 
+ALLOWED_IMG_TYPES = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+}
+
 # set user agent for musicbrainz API to identify the application
 musicbrainzngs.set_useragent(
     "Odio",
@@ -358,7 +364,7 @@ def apply_metadata():
         writer = MutagenHandler(filepath)
         results = writer.set_metadata(data["new_tags"])
 
-        return { "result": results }, 200
+        return {"result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -369,9 +375,59 @@ def apply_metadata():
 
 
 
-@app.route("/apply-album-art")
+@app.route("/apply-album-art", methods=["POST", "GET"])
 def apply_album_art():
-    pass
+    try:
+        audio_fname = request.form.get("audio_file")
+        img_file = request.files.get("album_art")
+
+        if not img_file:
+            raise Exception("Image file not provided")
+        
+        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
+        filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, audio_fname))
+
+        # check if the file exists
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"Audio file {filepath} does not exist.")
+        
+        # prevent directory traversal attacks
+        if not filepath.startswith(directory_abs):
+            raise Exception("Access denied: Invalid audio file name.")
+
+        # check file write access permissions
+        if not os.access(filepath, os.W_OK):
+            raise Exception(f"Insufficient write permissions for file {filepath}")
+        
+        audio_ext = os.path.splitext(audio_fname)[1].lower()
+        if not audio_ext in AUDIO_TYPES:
+            raise Exception(f"Write failed. File is detected to be an '{audio_ext}' file, which is not an audio type.")
+
+        img_ext = os.path.splitext(img_file.filename)[1].lower()
+
+        if not img_ext in ALLOWED_IMG_TYPES:
+            return {"result": "ERROR: Unsupported file type"} , 400
+        
+        img_file.seek(0)
+
+        data = {
+            "mime": img_file.mimetype,
+            "img": img_file.read()
+        }
+
+        handler = AlbumArtHandler(filepath)
+
+        handler.set_cover_art(data)
+
+        return {"result": "Album art set successfully"}, 200
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            "error": str(e), 
+            "result": {}
+        }, 400
+
+    
 
 
 if __name__ == "__main__":
