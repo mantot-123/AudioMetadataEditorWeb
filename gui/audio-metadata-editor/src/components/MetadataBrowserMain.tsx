@@ -1,4 +1,3 @@
-import { Icon } from "@iconify/react";
 import { useState } from "react";
 
 import { useCurrentFile } from "../context/CurrentFileContext";
@@ -12,17 +11,28 @@ interface MetadataBrowserProps {
   onClose(): void,
 }
 
+type MetadataBrowserResult = {
+  id: number;
+  title: string;
+  artist: string;
+  year: string;
+  genre: string;
+  album: string;
+  trackNumber: string;
+  discNumber?: string;
+  dateReleased: string;
+};
+
 // display the browser as a modal
 function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   const { fileInfo } = useCurrentFile();
   const [isError, setIsError] = useState<boolean>(false);
 
   const [query, setQuery] = useState<string>("");
-  const [selected, setSelected] = useState<object | null>(null);
+  const [selected, setSelected] = useState<MetadataBrowserResult | null>(null);
   const [errMsg, setErrMsg] = useState<string>("");
 
   const {
-    metadata,
     setId,
     setTitle,
     setArtist,
@@ -35,12 +45,12 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   } = useMetadata();
 
   // get row from the metadata table that was selected
-  const onRowSelect = (d: any) => {
+  const onRowSelect = (d: MetadataBrowserResult) => {
     if(selected !== d) return setSelected(d);
     setSelected(null);
   }
 
-  const onConfirm = (d: any) => {
+  const onConfirm = (d: MetadataBrowserResult) => {
     setId(d.id);
     setTitle(d.title);
     setArtist(d.artist);
@@ -48,7 +58,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
     setGenre(d.genre);
     setAlbum(d.album);
     setTrackNumber(d.trackNumber);
-    setDiscNumber(d.discNumber);
+    setDiscNumber(d.discNumber ?? "");
     setDateReleased(d.dateReleased);
   };
 
@@ -66,7 +76,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
             </div>
             <div className="modal-body">
               <div className="p-2">
-                <h5>Editing file: {fileInfo.fileName}</h5>
+                <h5>Editing file: {fileInfo?.rel_path ?? fileInfo?.name}</h5>
                 
                 <MetadataBrowserTable 
                   initialQuery={query}

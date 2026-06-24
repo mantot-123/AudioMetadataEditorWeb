@@ -8,22 +8,20 @@ import { useMetadata } from "../context/MetadataContext";
 import { useCurrentFile } from "../context/CurrentFileContext";
 
 function MetadataEditorForm() {
-  const { fileInfo, setCurrentFileName } = useCurrentFile();
+  const { fileInfo, updateCurrentFile } = useCurrentFile();
 
   const {
     metadata,
-    setId,
     setTitle,
     setArtist,
     setYear,
     setGenre,
     setAlbum,
     setTrackNumber,
-    setDiscNumber,
-    setDateReleased
+    setDiscNumber
   } = useMetadata();
 
-  const [newFileName, setNewFileName] = useState<string>(fileInfo.fileName);
+  const [newFileName, setNewFileName] = useState<string>(fileInfo?.name ?? "");
   const [showMetaBrowser, setShowMetaBrowser] = useState<boolean>(false);
 
   const [showFileDelModal, setShowFileDelModal] = useState<boolean>(false);
@@ -40,7 +38,7 @@ function MetadataEditorForm() {
   const onFileDeleteNo = (): void => {
     setShowFileDelModal(false);
   };
-  
+
   // close the metadata browser
   const onMetaBrowserClose = () => {
     setShowMetaBrowser(false);
@@ -64,7 +62,7 @@ function MetadataEditorForm() {
             name="fnameinput" 
             id="fnameinput" 
             onChange={(e) => setNewFileName(e.target.value)}
-            value={newFileName ?? ""}
+            value={fileInfo?.name ?? ""}
           />
         </div>
         <div className="my-4">
@@ -174,7 +172,7 @@ function MetadataEditorForm() {
       {/* DELETION DIALOG */}
       <DeleteFileDialog
         show={showFileDelModal}
-        fileName={fileInfo.fileName}
+        fileName={fileInfo?.name ?? ""}
         onDeleteYes={onFileDeleteYes}
         onDeleteNo={onFileDeleteNo}
       />

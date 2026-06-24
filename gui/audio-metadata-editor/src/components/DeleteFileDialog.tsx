@@ -1,5 +1,3 @@
-import { useCurrentFile } from "../context/CurrentFileContext";
-
 interface DeleteFileDialogProps {
   show: boolean,
   fileName: string,

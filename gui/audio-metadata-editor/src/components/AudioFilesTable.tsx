@@ -7,15 +7,7 @@ import UploadFileDialog from "./UploadFileDialog";
 import SettingsDialog from "./SettingsDialog";
 import { useCurrentFile } from "../context/CurrentFileContext";
 
-type AudioFile = {
-  name: string;
-  rel_path: string;
-  full_path: string;
-  size: number;
-  file_ext: string;
-  mime_type: string | null;
-  modify_time: number;
-};
+import type { AudioFile } from "../types/AudioFile";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 B";
@@ -43,7 +35,7 @@ const formatFileType = (file: AudioFile): string => {
 
 function AudioFilesTable() {
   const navigate = useNavigate();
-  const { setCurrentFileName } = useCurrentFile();
+  const { updateCurrentFile } = useCurrentFile();
   const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState<boolean>(false);
   const [files, setFiles] = useState<AudioFile[]>([]);
@@ -132,7 +124,7 @@ function AudioFilesTable() {
               key={file.name}
               style={ {cursor: "pointer"} }
               onClick={() => {
-                setCurrentFileName(file.name);
+                updateCurrentFile(file);
                 navigate("/edit");
               }}
             >
