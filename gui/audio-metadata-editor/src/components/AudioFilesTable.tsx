@@ -61,35 +61,37 @@ function AudioFilesTable() {
   };
 
   useEffect(() => {
-    void loadFiles();
+    loadFiles();
   }, []);
 
   const onUpload = () => {
-    void loadFiles();
+    loadFiles();
   };
 
   return ( 
     <div className="my-2 mx-4">
       <h3>Your files</h3>
-      <div className="d-flex gap-2 align-items-center justify-content-between">
-        <div className="my-2">
-          {/* icon buttons with svg */}
-          <button 
-            className="btn btn-outline-dark d-flex gap-2 align-items-center"
-            onClick={() => setShowUploadDialog(true)}
-            >
-            <Icon icon="ri:file-add-line" fontSize="22"/>
-            Add file
-          </button>
+      {!(isLoading || errorMessage) && (
+        <div className="d-flex gap-2 align-items-center justify-content-between">
+          <div className="my-2">
+            {/* icon buttons with svg */}
+            <button 
+              className="btn btn-outline-dark d-flex gap-2 align-items-center"
+              onClick={() => setShowUploadDialog(true)}
+              >
+              <Icon icon="ri:file-add-line" fontSize="22"/>
+              Add file
+            </button>
+          </div>
+          <div className="my-2">
+            <button 
+              className="btn btn-outline-dark d-flex gap-2 align-items-center"
+              onClick={() => setShowSettingsDialog(true)}>
+              <Icon icon="mdi:settings" fontSize="22" />
+            </button>
+          </div>
         </div>
-        <div className="my-2">
-          <button 
-            className="btn btn-outline-dark d-flex gap-2 align-items-center"
-            onClick={() => setShowSettingsDialog(true)}>
-            <Icon icon="mdi:settings" fontSize="22" />
-          </button>
-        </div>
-      </div>
+      )}
 
       <table className="table table-hover align-middle">
         <thead>
