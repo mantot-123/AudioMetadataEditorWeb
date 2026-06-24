@@ -46,6 +46,10 @@ musicbrainzngs.set_useragent(
 
 app = Flask(__name__)
 
+@app.route("/get-dir")
+def get_dir():
+    return {"dir": os.path.abspath(AUDIO_FILES_DIR)}, 200
+
 @app.route("/all-files")
 def all_files():
     # list audio files in the directory and their basic info 
@@ -55,20 +59,23 @@ def all_files():
         if not os.path.isdir(fulldir):
             raise FileNotFoundError(f"Directory {fulldir} does not exist.")
 
-        filenames = [f for f in os.listdir(fulldir)
-                    if os.path.isfile(os.path.join(fulldir, f))
-                    and os.path.splitext(f)[1].lower() in AUDIO_TYPES]
-
         all_files = []
-        for f in filenames:
-            fpath = os.path.join(fulldir, f)
-            if os.path.isfile(fpath):
-                ext = os.path.splitext(f)[1].lower()
+        for root, subdirs, files in os.walk(fulldir):
+            for f in files:
+                if not os.path.splitext(f)[1].lower() in AUDIO_TYPES:
+                    continue
+
+                fpath = os.path.abspath(os.path.join(root, f))
+                rel_path = os.path.relpath(fpath, fulldir)
+                ext = os.path.splitext(fpath)[1].lower()
                 stat = os.stat(fpath)
-                
+
                 mime_type, encoding = mimetypes.guess_type(f)
+
                 details = {
                     "name": f,
+                    "rel_path": rel_path,
+                    "full_path": fpath,
                     "size": os.path.getsize(fpath),
                     "file_ext": ext,
                     "mime_type": mime_type,
@@ -76,6 +83,8 @@ def all_files():
                 }
 
                 all_files.append(details)
+        
+        all_files.reverse()
 
         return all_files, 200
     except Exception as e:
