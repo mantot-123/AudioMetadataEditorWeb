@@ -1,30 +1,17 @@
 // context handler for fetched metadata to be put into the editor form
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import type { AudioUserTags } from "../types/AudioUserTags";
+import type { DiscNumberTag } from "../types/DiscNumbertag";
+import type { TrackNumberTag } from "../types/TrackNumberTag";
 
-type Metadata = {
-  id: number | null;
-  title: string | null;
-  artist: string | null;
-  year: string | null;
-  genre: string | null;
-  album: string | null;
-  trackNumber: string | null;
-  discNumber: string | null;
-  dateReleased: string | null;
-}
+type Metadata = AudioUserTags;
 
 type MetadataContextType = {
   metadata: Metadata,
-  setId: (id: number | null) => void,
-  setTitle: (title: string | null) => void,
-  setArtist: (artist: string | null) => void,
-  setYear: (year: string | null) => void,
-  setGenre: (genre: string | null) => void,
-  setAlbum: (album: string | null) => void,
-  setTrackNumber: (trackNumber: string | null) => void,
-  setDiscNumber: (discNumber: string | null) => void,
-  setDateReleased: (dateReleased: string | null) => void
+  setMetadataValue: <K extends keyof Metadata>(key: K, value: Metadata[K]) => void,
+  setTrackNumberValue: <K extends keyof TrackNumberTag>(key: K, value: TrackNumberTag[K]) => void,
+  setDiscNumberValue: <K extends keyof DiscNumberTag>(key: K, value: DiscNumberTag[K]) => void,
   resetMetadata: () => void
 }
 
@@ -32,36 +19,52 @@ export const MetadataContext = createContext<MetadataContextType | null>(null);
 
 // empty metadata
 const INITIAL_METADATA: Metadata = {
-  id: null,
   title: null,
-  artist: null,
+  album_artist: null,
   year: null,
   genre: null,
   album: null,
-  trackNumber: null,
-  discNumber: null,
-  dateReleased: null
+  track_number: null,
+  disc_number: null,
 };
 
 export default function MetadataProvider({ children }: { children: ReactNode }) {
   const [metadata, setMetadata] = useState<Metadata>(INITIAL_METADATA);
   
-  // setter methods for each metadata field
-  const setId = (id: number | null) => setMetadata(metadata => ({ ...metadata, id: id}))
-  const setTitle = (title: string | null) => setMetadata(metadata => ({ ...metadata, title: title }));
-  const setArtist = (artist: string | null) => setMetadata(metadata => ({ ...metadata, artist: artist }));
-  const setYear = (year: string | null) => setMetadata(metadata => ({ ...metadata, year: year }));
-  const setGenre = (genre: string | null) => setMetadata(metadata => ({ ...metadata, genre: genre }));
-  const setAlbum = (album: string | null) => setMetadata(metadata => ({ ...metadata, album: album }));
-  const setTrackNumber = (trackNumber: string | null) => setMetadata(metadata => ({ ...metadata, trackNumber: trackNumber }));
-  const setDiscNumber = (discNumber: string | null) => setMetadata(metadata => ({ ...metadata, discNumber: discNumber }));
-  const setDateReleased = (dateReleased: string | null) => setMetadata(metadata => ({ ...metadata, dateReleased: dateReleased }));
+  // setter method for metadata fields
+  const setMetadataValue = <K extends keyof Metadata>(key: K, value: Metadata[K]) => {
+    setMetadata(metadata => ({ ...metadata, [key]: value }));
+  };
+
+  const setTrackNumberValue = <K extends keyof TrackNumberTag>(key: K, value: TrackNumberTag[K]) => {
+    setMetadata(metadata => ({
+      ...metadata,
+      track_number: {
+        track_number: null,
+        total_tracks: null,
+        ...metadata.track_number,
+        [key]: value
+      }
+    }));
+  };
+
+  const setDiscNumberValue = <K extends keyof DiscNumberTag>(key: K, value: DiscNumberTag[K]) => {
+    setMetadata(metadata => ({
+      ...metadata,
+      disc_number: {
+        disc_number: null,
+        total_discs: null,
+        ...metadata.disc_number,
+        [key]: value
+      }
+    }));
+  };
 
   // revert metadata to empty state
   const resetMetadata = () => setMetadata(INITIAL_METADATA);
 
   return ( 
-    <MetadataContext.Provider value={ { metadata, setId, setTitle, setArtist, setYear, setGenre, setAlbum, setTrackNumber, setDiscNumber, setDateReleased, resetMetadata } }>
+    <MetadataContext.Provider value={ { metadata, setMetadataValue, setTrackNumberValue, setDiscNumberValue, resetMetadata } }>
       {children}
     </MetadataContext.Provider>  
   );

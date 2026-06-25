@@ -33,15 +33,9 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   const [errMsg, setErrMsg] = useState<string>("");
 
   const {
-    setId,
-    setTitle,
-    setArtist,
-    setYear,
-    setGenre,
-    setAlbum,
-    setTrackNumber,
-    setDiscNumber,
-    setDateReleased
+    setMetadataValue,
+    setTrackNumberValue,
+    setDiscNumberValue
   } = useMetadata();
 
   // get row from the metadata table that was selected
@@ -51,15 +45,13 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   }
 
   const onConfirm = (d: MetadataBrowserResult) => {
-    setId(d.id);
-    setTitle(d.title);
-    setArtist(d.artist);
-    setYear(d.year);
-    setGenre(d.genre);
-    setAlbum(d.album);
-    setTrackNumber(d.trackNumber);
-    setDiscNumber(d.discNumber ?? "");
-    setDateReleased(d.dateReleased);
+    setMetadataValue("title", d.title);
+    setMetadataValue("album_artist", d.artist);
+    setMetadataValue("year", d.year);
+    setMetadataValue("genre", d.genre);
+    setMetadataValue("album", d.album);
+    setTrackNumberValue("track_number", d.trackNumber === "" ? null : Number(d.trackNumber));
+    setDiscNumberValue("disc_number", !d.discNumber ? null : Number(d.discNumber));
   };
 
   if(!show) return null;

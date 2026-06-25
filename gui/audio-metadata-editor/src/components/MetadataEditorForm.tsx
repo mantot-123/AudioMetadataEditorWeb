@@ -20,13 +20,9 @@ function MetadataEditorForm() {
 
   const {
     metadata,
-    setTitle,
-    setArtist,
-    setYear,
-    setGenre,
-    setAlbum,
-    setTrackNumber,
-    setDiscNumber
+    setMetadataValue,
+    setTrackNumberValue,
+    setDiscNumberValue
   } = useMetadata();
 
   const [newFileName, setNewFileName] = useState<string>(fileInfo?.name ?? "");
@@ -67,13 +63,13 @@ function MetadataEditorForm() {
 
         const tags = response.data.result.tags;
 
-        setTitle(tags.title);
-        setArtist(tags.album_artist);
-        setYear(tags.year);
-        setGenre(tags.genre);
-        setAlbum(tags.album);
-        setTrackNumber(tags.track_number?.track_number);
-        setDiscNumber(tags.disc_number?.disc_number);
+        setMetadataValue("title", tags.title);
+        setMetadataValue("album_artist", tags.album_artist);
+        setMetadataValue("year", tags.year);
+        setMetadataValue("genre", tags.genre);
+        setMetadataValue("album", tags.album);
+        setMetadataValue("track_number", tags.track_number);
+        setMetadataValue("disc_number", tags.disc_number);
 
       } catch(error) {
         console.error("Unable to read file metadata");
@@ -113,7 +109,7 @@ function MetadataEditorForm() {
             placeholder="Enter title" 
             name="title" 
             id="title" 
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setMetadataValue("title", e.target.value)}
             value={metadata.title ?? ""}
           />
         </div>
@@ -124,8 +120,8 @@ function MetadataEditorForm() {
             placeholder="Enter artist" 
             name="artist" 
             id="artist" 
-            onChange={(e) => setArtist(e.target.value)}
-            value={metadata.artist ?? ""}
+            onChange={(e) => setMetadataValue("album_artist", e.target.value)}
+            value={metadata.album_artist ?? ""}
           />
         </div>
         <div className="my-4">
@@ -135,7 +131,7 @@ function MetadataEditorForm() {
             placeholder="Enter year" 
             name="year" 
             id="year" 
-            onChange={(e) => setYear(e.target.value)}
+            onChange={(e) => setMetadataValue("year", e.target.value)}
             value={metadata.year ?? ""}
           />
         </div>
@@ -146,7 +142,7 @@ function MetadataEditorForm() {
             placeholder="Enter genre" 
             name="genre" 
             id="genre" 
-            onChange={(e) => setGenre(e.target.value)}
+            onChange={(e) => setMetadataValue("genre", e.target.value)}
             value={metadata.genre ?? ""}
           />
         </div>
@@ -157,7 +153,7 @@ function MetadataEditorForm() {
             placeholder="Enter album" 
             name="album" 
             id="album" 
-            onChange={(e) => setAlbum(e.target.value)}
+            onChange={(e) => setMetadataValue("album", e.target.value)}
             value={metadata.album ?? ""}
           />
         </div>
@@ -168,8 +164,8 @@ function MetadataEditorForm() {
             placeholder="Enter track number" 
             name="trackno" 
             id="trackno" 
-            onChange={(e) => setTrackNumber(e.target.value)}
-            value={metadata.trackNumber ?? ""}
+            onChange={(e) => setTrackNumberValue("track_number", e.target.value === "" ? null : Number(e.target.value))}
+            value={metadata.track_number?.track_number ?? ""}
           />
         </div>
         <div className="my-4">
@@ -179,8 +175,8 @@ function MetadataEditorForm() {
             placeholder="Enter disc number" 
             name="discno" 
             id="discno" 
-            onChange={(e) => setDiscNumber(e.target.value)}
-            value={metadata.discNumber ?? ""}
+            onChange={(e) => setDiscNumberValue("disc_number", e.target.value === "" ? null : Number(e.target.value))}
+            value={metadata.disc_number?.disc_number ?? ""}
           />
         </div>
         <div className="my-4">
