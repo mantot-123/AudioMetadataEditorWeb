@@ -1,11 +1,19 @@
 import { Icon } from "@iconify/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 import MetadataBrowserMain from "./MetadataBrowserMain";
 import DeleteFileDialog from "./DeleteFileDialog";
 
 import { useMetadata } from "../context/MetadataContext";
 import { useCurrentFile } from "../context/CurrentFileContext";
+
+import type { AudioUserTags } from "../types/AudioUserTags";
+import type { AudioFileFullMetadata } from "../types/AudioFileFullMetadata";
+
+type ReadMetadataResponse = {
+  result: AudioFileFullMetadata
+};
 
 function MetadataEditorForm() {
   const { fileInfo, updateCurrentFile } = useCurrentFile();
@@ -23,8 +31,8 @@ function MetadataEditorForm() {
 
   const [newFileName, setNewFileName] = useState<string>(fileInfo?.name ?? "");
   const [showMetaBrowser, setShowMetaBrowser] = useState<boolean>(false);
-
   const [showFileDelModal, setShowFileDelModal] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onDelDialogOpen = (): void => {
     setShowFileDelModal(true);
@@ -43,6 +51,39 @@ function MetadataEditorForm() {
   const onMetaBrowserClose = () => {
     setShowMetaBrowser(false);
   };
+
+  useEffect(() => {
+    const loadMetadata = async (): Promise<void> => {
+      const filename = fileInfo?.rel_path;
+
+      if(!filename) return;
+
+      try {
+        setIsLoading(true);
+
+        const response = await axios.get<ReadMetadataResponse>("/read-metadata", {
+          params: { filename }
+        });
+
+        const tags = response.data.result.tags;
+
+        setTitle(tags.title);
+        setArtist(tags.album_artist);
+        setYear(tags.year);
+        setGenre(tags.genre);
+        setAlbum(tags.album);
+        setTrackNumber(tags.track_number?.track_number);
+        setDiscNumber(tags.disc_number?.disc_number);
+
+      } catch(error) {
+        console.error("Unable to read file metadata");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMetadata();
+  }, []);
 
   return (
     <>

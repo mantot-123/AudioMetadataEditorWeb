@@ -141,13 +141,13 @@ class MutagenHandler:
             }
         elif is_track_no:
             return {
-                "track_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
-                "total_tracks": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
+                "track_number": int(tag.text[0].split("/")[0]) if "/" in tag.text[0] else int(tag.text[0]),
+                "total_tracks": int(tag.text[0].split("/")[1]) if "/" in tag.text[0] else None
             }
         elif is_disc_no:
             return {
-                "disc_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
-                "total_discs": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
+                "disc_number": int(tag.text[0].split("/")[0]) if "/" in tag.text[0] else int(tag.text[0]),
+                "total_discs": int(tag.text[0].split("/")[1]) if "/" in tag.text[0] else None
             }
 
         # for text metadata
