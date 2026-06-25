@@ -20,7 +20,8 @@ function MetadataEditorForm() {
 
   const {
     metadata,
-    setMetadataValue,
+    setAudioFileMetadataValue,
+    setUserTagValue,
     setTrackNumberValue,
     setDiscNumberValue
   } = useMetadata();
@@ -61,15 +62,23 @@ function MetadataEditorForm() {
           params: { filename }
         });
 
-        const tags = response.data.result.tags;
+        const result = response.data.result;
+        const tags = result.tags;
 
-        setMetadataValue("title", tags.title);
-        setMetadataValue("album_artist", tags.album_artist);
-        setMetadataValue("year", tags.year);
-        setMetadataValue("genre", tags.genre);
-        setMetadataValue("album", tags.album);
-        setMetadataValue("track_number", tags.track_number);
-        setMetadataValue("disc_number", tags.disc_number);
+        setAudioFileMetadataValue("filepath", result.filepath);
+        setAudioFileMetadataValue("format", result.format);
+        setAudioFileMetadataValue("duration", result.duration);
+        setAudioFileMetadataValue("bitrate", result.bitrate);
+        setAudioFileMetadataValue("channels", result.channels);
+        setAudioFileMetadataValue("sample_rate", result.sample_rate);
+        setAudioFileMetadataValue("tags", tags);
+        setUserTagValue("title", tags.title);
+        setUserTagValue("album_artist", tags.album_artist);
+        setUserTagValue("year", tags.year);
+        setUserTagValue("genre", tags.genre);
+        setUserTagValue("album", tags.album);
+        setUserTagValue("track_number", tags.track_number);
+        setUserTagValue("disc_number", tags.disc_number);
 
       } catch(error) {
         console.error("Unable to read file metadata");
@@ -109,8 +118,8 @@ function MetadataEditorForm() {
             placeholder="Enter title" 
             name="title" 
             id="title" 
-            onChange={(e) => setMetadataValue("title", e.target.value)}
-            value={metadata.title ?? ""}
+            onChange={(e) => setUserTagValue("title", e.target.value)}
+            value={metadata.tags.title ?? ""}
           />
         </div>
         <div className="my-4">
@@ -120,8 +129,8 @@ function MetadataEditorForm() {
             placeholder="Enter artist" 
             name="artist" 
             id="artist" 
-            onChange={(e) => setMetadataValue("album_artist", e.target.value)}
-            value={metadata.album_artist ?? ""}
+            onChange={(e) => setUserTagValue("album_artist", e.target.value)}
+            value={metadata.tags.album_artist ?? ""}
           />
         </div>
         <div className="my-4">
@@ -131,8 +140,8 @@ function MetadataEditorForm() {
             placeholder="Enter year" 
             name="year" 
             id="year" 
-            onChange={(e) => setMetadataValue("year", e.target.value)}
-            value={metadata.year ?? ""}
+            onChange={(e) => setUserTagValue("year", e.target.value)}
+            value={metadata.tags.year ?? ""}
           />
         </div>
         <div className="my-4">
@@ -142,8 +151,8 @@ function MetadataEditorForm() {
             placeholder="Enter genre" 
             name="genre" 
             id="genre" 
-            onChange={(e) => setMetadataValue("genre", e.target.value)}
-            value={metadata.genre ?? ""}
+            onChange={(e) => setUserTagValue("genre", e.target.value)}
+            value={metadata.tags.genre ?? ""}
           />
         </div>
         <div className="my-4">
@@ -153,8 +162,8 @@ function MetadataEditorForm() {
             placeholder="Enter album" 
             name="album" 
             id="album" 
-            onChange={(e) => setMetadataValue("album", e.target.value)}
-            value={metadata.album ?? ""}
+            onChange={(e) => setUserTagValue("album", e.target.value)}
+            value={metadata.tags.album ?? ""}
           />
         </div>
         <div className="my-4">
@@ -165,7 +174,7 @@ function MetadataEditorForm() {
             name="trackno" 
             id="trackno" 
             onChange={(e) => setTrackNumberValue("track_number", e.target.value === "" ? null : Number(e.target.value))}
-            value={metadata.track_number?.track_number ?? ""}
+            value={metadata.tags.track_number?.track_number ?? ""}
           />
         </div>
         <div className="my-4">
@@ -176,7 +185,7 @@ function MetadataEditorForm() {
             name="discno" 
             id="discno" 
             onChange={(e) => setDiscNumberValue("disc_number", e.target.value === "" ? null : Number(e.target.value))}
-            value={metadata.disc_number?.disc_number ?? ""}
+            value={metadata.tags.disc_number?.disc_number ?? ""}
           />
         </div>
         <div className="my-4">
