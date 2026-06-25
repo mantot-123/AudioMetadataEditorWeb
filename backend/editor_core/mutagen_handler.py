@@ -140,14 +140,18 @@ class MutagenHandler:
                 "desc": tag.desc 
             }
         elif is_track_no:
+            track_number = tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0]
+            total_tracks = tag.text[0].split("/")[1] if "/" in tag.text[0] else None
             return {
-                "track_number": int(tag.text[0].split("/")[0]) if "/" in tag.text[0] else int(tag.text[0]),
-                "total_tracks": int(tag.text[0].split("/")[1]) if "/" in tag.text[0] else None
+                "track_number": int(track_number) if track_number else None,
+                "total_tracks": int(total_tracks) if total_tracks else None,
             }
         elif is_disc_no:
+            disc_number = tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0]
+            total_discs = tag.text[0].split("/")[1] if "/" in tag.text[0] else None
             return {
-                "disc_number": int(tag.text[0].split("/")[0]) if "/" in tag.text[0] else int(tag.text[0]),
-                "total_discs": int(tag.text[0].split("/")[1]) if "/" in tag.text[0] else None
+                "disc_number": disc_number,
+                "total_discs": total_discs
             }
 
         # for text metadata
@@ -174,6 +178,23 @@ class MutagenHandler:
         # multiple values can be mapped to the same vorbis field
         # in mutagen, each key would store these values in a list, even if there is only 1 value for that key
         field = tags.get(raw_key, None)
+
+        if raw_key == AUDIO_TAG_MAPPING["ogg"]["track_number"]:
+            track_number = field[0].split("/")[0] if "/" in field[0] else field[0]
+            total_tracks = field[0].split("/")[1] if "/" in field[0] else None
+            return {
+                "track_number": int(track_number) if track_number else None,
+                "total_tracks": int(total_tracks) if total_tracks else None
+            }
+    
+        if raw_key == AUDIO_TAG_MAPPING["ogg"]["disc_number"]:
+            disc_number = field[0].split("/")[0] if "/" in field[0] else field[0]
+            total_discs = field[0].split("/")[1] if "/" in field[0] else None
+            return {
+                "disc_number": int(disc_number) if disc_number else None,
+                "total_discs": int(total_discs) if total_discs else None 
+            }
+        
         return field[0] if field else None
 
 
@@ -222,15 +243,19 @@ class MutagenHandler:
         val_str = str(val) if val else None
         # WMA track/disc number
         if raw_key == AUDIO_TAG_MAPPING["wma"]["track_number"]:
+            track_number = val_str.split("/")[0] if "/" in val_str else val_str
+            total_tracks = val_str.split("/")[1] if "/" in val_str else None
             return {
-                "track_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
-                "total_tracks": int(val_str.split("/")[1]) if "/" in val_str else None
+                "track_number": int(track_number) if track_number else None,
+                "total_tracks": int(total_tracks) if total_tracks else None
             }
         
         if raw_key == AUDIO_TAG_MAPPING["wma"]["disc_number"]:
+            disc_number = val_str.split("/")[0] if "/" in val_str else val_str
+            total_discs = val_str.split("/")[1] if "/" in val_str else None
             return {
-                "disc_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
-                "total_discs": int(val_str.split("/")[1]) if "/" in val_str else None
+                "disc_number": int(disc_number) if disc_number else None,
+                "total_discs": int(total_discs) if disc_number else None
             }
         
         return val_str
