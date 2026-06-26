@@ -87,6 +87,7 @@ class AlbumArtHandler:
         tag_name = AUDIO_TAG_MAPPING["mp4"]["cover_art"]
         tag = audio_mp4.get(tag_name)
 
+        # COVER ART is stored as a list of MP4Cover objects, which contain the image data and format
         cover = tag[0]
 
         if not cover:
@@ -120,9 +121,9 @@ class AlbumArtHandler:
         cover = tag[0]
 
         art_data = {
-            "mime": cover.mime,
-            "art_type": cover.type,
-            "desc": cover.desc,
+            "mime": None,
+            "art_type": None,
+            "desc": None,
             "img": base64.b64encode(cover.value).decode("utf-8")
         }
 

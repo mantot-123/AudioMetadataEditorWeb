@@ -290,7 +290,7 @@ def read_metadata():
     except Exception as e:
         traceback.print_exc()
         return {
-            "error": f"Unable to fetch audio file metadata: {str(e)}",
+            "error": f"{str(e)}",
             "result": {}
         }, 400
 
