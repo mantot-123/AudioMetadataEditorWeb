@@ -16,47 +16,45 @@ class MutagenHandler:
 
     def read_metadata(self):
         result = {}
-        try:
-            audio_file = mutagen.File(self.audio_src)
+        audio_file = mutagen.File(self.audio_src)
 
-            if not audio_file:
-                raise Exception(f"Could not open file {self.audio_src}")
+        if not audio_file:
+            raise Exception(f"Could not open file {self.audio_src}")
 
-            ext = os.path.splitext(self.audio_src)[1].lower()
+        ext = os.path.splitext(self.audio_src)[1].lower()
 
-            file_type = EXT_TO_TYPE[ext]
+        file_type = EXT_TO_TYPE[ext]
 
-            # get the appropriate metadata tag mapping for a specific file type
-            tag_map = AUDIO_TAG_MAPPING[file_type]
+        # get the appropriate metadata tag mapping for a specific file type
+        tag_map = AUDIO_TAG_MAPPING[file_type]
 
-            # get audio stream information (bitrate, sample rate, audio channel count etc.)
-            # exists in every audio file type
-            result = {
-                "filepath": self.audio_src,
-                "format": file_type,
-                "duration": round(audio_file.info.length, 2),
-                "bitrate":  getattr(audio_file.info, "bitrate", None), # "audio_file.info" for basic audio stream info
-                "channels": getattr(audio_file.info, "channels", None),
-                "sample_rate": getattr(audio_file.info, "sample_rate", None),
-                "tags": {}
-            }
+        # get audio stream information (bitrate, sample rate, audio channel count etc.)
+        # exists in every audio file type
+        result = {
+            "filepath": self.audio_src,
+            "format": file_type,
+            "duration": round(audio_file.info.length, 2),
+            "bitrate":  getattr(audio_file.info, "bitrate", None), # "audio_file.info" for basic audio stream info
+            "channels": getattr(audio_file.info, "channels", None),
+            "sample_rate": getattr(audio_file.info, "sample_rate", None),
+            "tags": {}
+        }
 
-            # check if there are no tags in the file
-            if audio_file.tags is None: # "audio_file.tags" for user-defined metadata tags
-                return result
-            
-            for name, key in tag_map.items():
-                # skip unsupported keys 
-                # some tagging systems do not have certain tags 
-                # that might be available in other systems
-                if key is None:
-                    continue
+        # check if there are no tags in the file
+        if audio_file.tags is None: # "audio_file.tags" for user-defined metadata tags
+            return result
+        
+        for name, key in tag_map.items():
+            # skip unsupported keys 
+            # some tagging systems do not have certain tags 
+            # that might be available in other systems
+            if key is None:
+                continue
 
-                result["tags"][name] = self._get_field(audio_file.tags, file_type, name, key)
+            if name == "cover_art":
+                continue
 
-        except Exception as e:
-            traceback.print_exc()
-            return {}
+            result["tags"][name] = self._get_field(audio_file.tags, file_type, name, key)
         
         return result
 
@@ -91,7 +89,7 @@ class MutagenHandler:
     def _get_id3_field(self, tags, fmt, raw_key):
         # for text-based tags, they are always stored in a list for consistency, 
         # even if they only store 1 value most of the time in most audio files
-        print(raw_key)
+        # print(raw_key)
 
         # multiple COMM, USLT and APIC frames can exist in a single file, 
         # each with a different language and description.
@@ -120,34 +118,35 @@ class MutagenHandler:
         is_track_no = raw_key.startswith("TRCK")
         is_disc_no = raw_key.startswith("TPOS")
 
-        print(is_comment, is_lyrics, is_cover_art, is_track_no, is_disc_no)
+        # print(is_comment, is_lyrics, is_cover_art, is_track_no, is_disc_no)
         if is_comment:
             return {
                 "lang": tag.lang,
                 "desc": tag.desc,
                 "text": tag.text[0]
             }
-        elif is_lyrics:
+        
+        if is_lyrics:
             return {
                 "lang": tag.lang,
                 "desc": tag.desc,
                 "text": tag.text[0]
             }
-        elif is_cover_art:
+        
+        if is_track_no:
+            track_number = tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0]
+            total_tracks = tag.text[0].split("/")[1] if "/" in tag.text[0] else None
             return {
-                "mime": tag.mime,
-                "art_type": tag.type,
-                "desc": tag.desc 
+                "track_number": self._safe_int(track_number) if track_number else None,
+                "total_tracks": self._safe_int(total_tracks) if total_tracks else None,
             }
-        elif is_track_no:
+        
+        if is_disc_no:
+            disc_number = tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0]
+            total_discs = tag.text[0].split("/")[1] if "/" in tag.text[0] else None
             return {
-                "track_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
-                "total_tracks": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
-            }
-        elif is_disc_no:
-            return {
-                "disc_number": tag.text[0].split("/")[0] if "/" in tag.text[0] else tag.text[0],
-                "total_discs": tag.text[0].split("/")[1] if "/" in tag.text[0] else None
+                "disc_number": self._safe_int(disc_number) if disc_number else None,
+                "total_discs": self._safe_int(total_discs) if total_discs else None
             }
 
         # for text metadata
@@ -174,21 +173,29 @@ class MutagenHandler:
         # multiple values can be mapped to the same vorbis field
         # in mutagen, each key would store these values in a list, even if there is only 1 value for that key
         field = tags.get(raw_key, None)
+
+        if raw_key == AUDIO_TAG_MAPPING["ogg"]["track_number"]:
+            track_number = field[0].split("/")[0] if "/" in field[0] else field[0]
+            total_tracks = field[0].split("/")[1] if "/" in field[0] else None
+            return {
+                "track_number": self._safe_int(track_number) if track_number else None,
+                "total_tracks": self._safe_int(total_tracks) if total_tracks else None
+            }
+    
+        if raw_key == AUDIO_TAG_MAPPING["ogg"]["disc_number"]:
+            disc_number = field[0].split("/")[0] if "/" in field[0] else field[0]
+            total_discs = field[0].split("/")[1] if "/" in field[0] else None
+            return {
+                "disc_number": self._safe_int(disc_number) if disc_number else None,
+                "total_discs": self._safe_int(total_discs) if total_discs else None 
+            }
+        
         return field[0] if field else None
 
 
     def _get_mp4_field(self, tags, fmt, raw_key):
         field = tags.get(raw_key, None)
         val = field[0] if field else None
-
-        # COVER ART is stored as a list of MP4Cover objects, which contain the image data and format
-        if raw_key == AUDIO_TAG_MAPPING["mp4"]["cover_art"]:
-            if not val: return None
-            return {
-                "mime": "image/jpeg" if val.imageformat == MP4Cover.FORMAT_JPEG else "image/png", # mp4 album art only supports JPEG and PNG formats
-                "art_type": None,  # not supported - mp4 does not have a field for art types and description
-                "desc": None 
-            }
 
         # check if the field is a track number or disc number
         if isinstance(val, tuple):
@@ -209,28 +216,36 @@ class MutagenHandler:
     def _get_asf_field(self, tags, fmt, raw_key):
         tag = tags.get(raw_key, None)
         val = tag[0] if tag else None
-        
-        # WMA cover art
-        if raw_key == AUDIO_TAG_MAPPING["wma"]["cover_art"]:
-            if not val: return None
-            return {
-                "mime": val.mime,
-                "art_type": val.type,
-                "desc": val.description
-            }
 
-        val_str = str(val) if val else None
+        val_str = val.value if val else None
+
         # WMA track/disc number
         if raw_key == AUDIO_TAG_MAPPING["wma"]["track_number"]:
+            if not val_str:
+                return {
+                    "track_number": None, 
+                    "total_tracks": None
+                }
+            track_number = val_str.split("/")[0] if "/" in val_str else val_str
+            total_tracks = val_str.split("/")[1] if "/" in val_str else None
             return {
-                "track_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
-                "total_tracks": int(val_str.split("/")[1]) if "/" in val_str else None
+                "track_number": self._safe_int(track_number) if track_number else None,
+                "total_tracks": self._safe_int(total_tracks) if total_tracks else None
             }
         
         if raw_key == AUDIO_TAG_MAPPING["wma"]["disc_number"]:
+            if not val_str:
+                return {
+                    "disc_number": None, 
+                    "total_discs": None
+                } 
+            disc_number = val_str.split("/")[0] if "/" in val_str else val_str
+            total_discs = val_str.split("/")[1] if "/" in val_str else None
+            print(disc_number)
+            print(total_discs)
             return {
-                "disc_number": int(val_str.split("/")[0]) if "/" in val_str else val_str,
-                "total_discs": int(val_str.split("/")[1]) if "/" in val_str else None
+                "disc_number": self._safe_int(disc_number) if disc_number else None,
+                "total_discs": self._safe_int(total_discs) if total_discs else None
             }
         
         return val_str
@@ -388,7 +403,7 @@ class MutagenHandler:
         audio_asf = ASF(self.audio_src)
 
         if audio_asf.tags is None:
-            audio.add_tags()
+            audio_asf.add_tags()
 
         for key, val in new_tags.items():
             if key in AUDIO_TAG_MAPPING["wma"]:
@@ -408,3 +423,11 @@ class MutagenHandler:
                 audio_asf[AUDIO_TAG_MAPPING["wma"][key]] = [str(val)]
         
         audio_asf.save(self.audio_src)
+    
+    def _safe_int(self, value):
+        if not value:
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return None

@@ -1,4 +1,3 @@
-import { Icon } from "@iconify/react";
 import { useState } from "react";
 
 import { useCurrentFile } from "../context/CurrentFileContext";
@@ -12,44 +11,47 @@ interface MetadataBrowserProps {
   onClose(): void,
 }
 
+type MetadataBrowserResult = {
+  id: number;
+  title: string;
+  artist: string;
+  year: string;
+  genre: string;
+  album: string;
+  trackNumber: string;
+  discNumber?: string;
+  dateReleased: string;
+};
+
 // display the browser as a modal
 function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   const { fileInfo } = useCurrentFile();
   const [isError, setIsError] = useState<boolean>(false);
 
   const [query, setQuery] = useState<string>("");
-  const [selected, setSelected] = useState<object | null>(null);
+  const [selected, setSelected] = useState<MetadataBrowserResult | null>(null);
   const [errMsg, setErrMsg] = useState<string>("");
 
   const {
-    metadata,
-    setId,
-    setTitle,
-    setArtist,
-    setYear,
-    setGenre,
-    setAlbum,
-    setTrackNumber,
-    setDiscNumber,
-    setDateReleased
+    setUserTagValue,
+    setTrackNumberValue,
+    setDiscNumberValue
   } = useMetadata();
 
   // get row from the metadata table that was selected
-  const onRowSelect = (d: any) => {
+  const onRowSelect = (d: MetadataBrowserResult) => {
     if(selected !== d) return setSelected(d);
     setSelected(null);
   }
 
-  const onConfirm = (d: any) => {
-    setId(d.id);
-    setTitle(d.title);
-    setArtist(d.artist);
-    setYear(d.year);
-    setGenre(d.genre);
-    setAlbum(d.album);
-    setTrackNumber(d.trackNumber);
-    setDiscNumber(d.discNumber);
-    setDateReleased(d.dateReleased);
+  const onConfirm = (d: MetadataBrowserResult) => {
+    setUserTagValue("title", d.title);
+    setUserTagValue("album_artist", d.artist);
+    setUserTagValue("year", d.year);
+    setUserTagValue("genre", d.genre);
+    setUserTagValue("album", d.album);
+    setTrackNumberValue("track_number", d.trackNumber === "" ? null : Number(d.trackNumber));
+    setDiscNumberValue("disc_number", !d.discNumber ? null : Number(d.discNumber));
   };
 
   if(!show) return null;
@@ -66,7 +68,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
             </div>
             <div className="modal-body">
               <div className="p-2">
-                <h5>Editing file: {fileInfo.fileName}</h5>
+                <h5>Editing file: {fileInfo?.rel_path ?? fileInfo?.name}</h5>
                 
                 <MetadataBrowserTable 
                   initialQuery={query}

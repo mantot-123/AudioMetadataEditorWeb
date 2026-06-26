@@ -1,18 +1,25 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useCallback, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-
-type CurrentFile = {
-  fileName: string | null
-};
+import type { AudioFile } from "../types/AudioFile";
 
 type CurrentFileContextType = {
-  fileInfo: CurrentFile | null,
-  setCurrentFileName: (newFileName: string | null) => void
-  resetCurrentFile: () => void
+  fileInfo: AudioFile | null,
+  updateCurrentFile: (updates: Partial<AudioFile> | null) => void
 }
 
-const INITIAL_CURRENT_FILE: CurrentFile = {
-  fileName: null
+const isAudioFile = (value: unknown): value is AudioFile => {
+  if (!value || typeof value !== "object") return false;
+
+  const file = value as AudioFile;
+  return (
+    typeof file.name === "string" &&
+    typeof file.rel_path === "string" &&
+    typeof file.full_path === "string" &&
+    typeof file.size === "number" &&
+    typeof file.file_ext === "string" &&
+    (typeof file.mime_type === "string" || file.mime_type === null) &&
+    typeof file.modify_time === "number"
+  );
 };
 
 // stores information about the current file that is opened
@@ -20,38 +27,52 @@ const INITIAL_CURRENT_FILE: CurrentFile = {
 export const CurrentFileContext = createContext<CurrentFileContextType | null>(null);
 
 export default function CurrentFileProvider({ children }: { children: ReactNode }) {
-  const [fileInfo, setFileInfo] = useState<CurrentFile | null>(() => {
-    // fallback value in case the current file info cannot be loaded from storage
-    const defaults: CurrentFile = INITIAL_CURRENT_FILE;
-
+  const [fileInfo, setFileInfo] = useState<AudioFile | null>(() => {
     // check if a "currentFile" key exists in the local storage
     // if yes, load that file
-    // if no, or the value in the key is corrupted, then use the fallback
+    // if no, or the value in the key is corrupted, then use no selected file
     try {
       const saved: string | null = localStorage.getItem("currentFile");
-      if(!saved) return defaults;
+      if(!saved) return null;
 
       const parsed = JSON.parse(saved);
 
-      if(!parsed || typeof parsed !== "object")
-        return defaults;
+      if(!isAudioFile(parsed))
+        return null;
 
-      return parsed as CurrentFile | null;
+      return parsed;
 
     } catch {
-      return defaults;
+      return null;
     }
   });
 
   useEffect(() => {
-    localStorage.setItem("currentFile", JSON.stringify(fileInfo as object));
+    if (!fileInfo) {
+      localStorage.removeItem("currentFile");
+      return;
+    }
+
+    localStorage.setItem("currentFile", JSON.stringify(fileInfo));
   }, [fileInfo]);
 
-  const setCurrentFileName = (newFileName: string | null) => setFileInfo({...fileInfo, fileName: newFileName });
-  const resetCurrentFile = () => setFileInfo(INITIAL_CURRENT_FILE);
+  const updateCurrentFile = useCallback((updates: Partial<AudioFile> | null) => {
+    if (updates === null) {
+      setFileInfo(null);
+      return;
+    }
+
+    setFileInfo((currentFile) => {
+      if (!currentFile) {
+        return isAudioFile(updates) ? updates : null;
+      }
+
+      return { ...currentFile, ...updates };
+    });
+  }, []);
 
   return ( 
-    <CurrentFileContext.Provider value={{ fileInfo, setCurrentFileName, resetCurrentFile }}>
+    <CurrentFileContext.Provider value={{ fileInfo, updateCurrentFile }}>
       {children}
     </CurrentFileContext.Provider> 
   );

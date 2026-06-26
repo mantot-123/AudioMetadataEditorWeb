@@ -2,41 +2,26 @@ import StartPage from "./StartPage";
 import EditAudioPage from "./EditAudioPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useMetadata } from "../context/MetadataContext";
-import { useState, useEffect, useContext } from "react";
-import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router";
 
-function EditorMain() {
+function EditorMainPage() {
   const navigate = useNavigate();
 
-  const {
-    fileInfo, 
-    setCurrentFileName, 
-    resetCurrentFile
-  } = useCurrentFile();
+  const location = useLocation();
+  const { updateCurrentFile } = useCurrentFile();
 
-  const {
-    metadata,
-    setId,
-    setTitle,
-    setArtist,
-    setYear,
-    setGenre,
-    setAlbum,
-    setTrackNumber,
-    setDiscNumber,
-    setDateReleased,
-    resetMetadata
-  } = useMetadata();
+  const { resetMetadata } = useMetadata();
 
   useEffect(() => {
     if(location.pathname !== "/edit") {
-      resetCurrentFile();
+      updateCurrentFile(null);
       resetMetadata();
     }
-  }, [location.pathname, resetCurrentFile, resetMetadata])
+  }, [location.pathname, updateCurrentFile, resetMetadata])
 
   const goBack = () => {
-    resetCurrentFile();
+    updateCurrentFile(null);
     resetMetadata();
     navigate("/");
   };
@@ -53,4 +38,4 @@ function EditorMain() {
   );
 }
 
-export default EditorMain;
+export default EditorMainPage;
