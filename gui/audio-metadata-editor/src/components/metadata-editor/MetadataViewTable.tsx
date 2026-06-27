@@ -72,10 +72,8 @@ function MetadataViewTable() {
     { group: "Tags", name: "Album", value: tags.album },
     { group: "Tags", name: "Year", value: tags.year },
     { group: "Tags", name: "Genre", value: tags.genre },
-    { group: "Tags", name: "Track number", value: tags.track_number?.track_number },
-    { group: "Tags", name: "Total tracks", value: tags.track_number?.total_tracks },
-    { group: "Tags", name: "Disc number", value: tags.disc_number?.disc_number },
-    { group: "Tags", name: "Total discs", value: tags.disc_number?.total_discs },
+    { group: "Tags", name: "Track number", value: tags.track_number },
+    { group: "Tags", name: "Disc number", value: tags.disc_number },
   ];
 
 	return (

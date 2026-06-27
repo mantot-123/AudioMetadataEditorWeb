@@ -197,7 +197,7 @@ function MetadataEditorForm() {
               name="trackno" 
               id="trackno" 
               onChange={(e) => setTrackNumberValue("track_number", e.target.value === "" ? null : Number(e.target.value))}
-              value={metadata.tags.track_number?.track_number ?? ""}
+              value={metadata.tags.track_number ?? ""}
             />
           </div>
           <div className="my-4">
@@ -208,7 +208,7 @@ function MetadataEditorForm() {
               name="discno" 
               id="discno" 
               onChange={(e) => setDiscNumberValue("disc_number", e.target.value === "" ? null : Number(e.target.value))}
-              value={metadata.tags.disc_number?.disc_number ?? ""}
+              value={metadata.tags.disc_number ?? ""}
             />
           </div>
           <div className="my-4">

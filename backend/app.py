@@ -285,7 +285,7 @@ def read_metadata():
         reader = MutagenHandler(filepath)
         results = reader.read_metadata()
 
-        return { "result": results }, 200
+        return { "error": None, "result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -324,7 +324,7 @@ def get_album_art():
         reader = AlbumArtHandler(filepath)
         results = reader.get_cover_art()
 
-        return { "result": results }, 200
+        return { "error": None, "result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -371,16 +371,13 @@ def apply_metadata():
             raise Exception(f"Write failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
 
         writer = MutagenHandler(filepath)
-        results = writer.set_metadata(data["new_tags"])
+        result = writer.set_metadata(data["new_tags"])
 
-        return {"result": results }, 200
+        return {"result": result }, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {
-            "error": f"Unable to write audio metadata: {str(e)}",
-            "result": {}
-        }, 400
+        return { "result": str(e) }, 400
 
 
 
@@ -415,7 +412,7 @@ def apply_album_art():
         img_ext = os.path.splitext(img_file.filename)[1].lower()
 
         if not img_ext in ALLOWED_IMG_TYPES:
-            return {"result": "ERROR: Unsupported file type"} , 400
+            raise Exception("Unsupported file type")
         
         img_file.seek(0)
 
@@ -431,10 +428,7 @@ def apply_album_art():
         return {"result": "Album art set successfully"}, 200
     except Exception as e:
         traceback.print_exc()
-        return {
-            "error": str(e), 
-            "result": {}
-        }, 400
+        return { "result": str(e) }, 400
 
     
 
