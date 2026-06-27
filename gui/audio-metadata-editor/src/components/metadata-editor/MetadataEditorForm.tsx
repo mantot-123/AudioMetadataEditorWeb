@@ -11,7 +11,10 @@ import { useCurrentFile } from "../../context/CurrentFileContext";
 import type { AudioUserTags } from "../../types/AudioUserTags";
 import type { AudioFileFullMetadata } from "../../types/AudioFileFullMetadata";
 
-type ReadMetadataResponse = { result: AudioFileFullMetadata }; 
+type ReadMetadataResponse = { 
+  error: string;
+  result: AudioFileFullMetadata;
+}; 
 
 function MetadataEditorForm() {
   const { fileInfo, updateCurrentFile } = useCurrentFile();
