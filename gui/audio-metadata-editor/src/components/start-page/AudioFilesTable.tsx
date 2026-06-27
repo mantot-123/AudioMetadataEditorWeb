@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import UploadFileDialog from "./UploadFileDialog";
-import SettingsDialog from "./SettingsDialog";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import SettingsDialog from "../settings/SettingsDialog";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 
-import type { AudioFile } from "../types/AudioFile";
+import type { AudioFile } from "../../types/AudioFile";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 B";

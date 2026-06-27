@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 
-import { useMetadata } from "../context/MetadataContext";
+import { useMetadata } from "../../context/MetadataContext";
 
 // sample data for track information. this can be replaced
 const SAMPLE_TRACKS = [

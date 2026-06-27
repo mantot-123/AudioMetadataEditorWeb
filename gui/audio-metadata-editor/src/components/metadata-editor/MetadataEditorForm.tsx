@@ -2,14 +2,14 @@ import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-import MetadataBrowserMain from "./MetadataBrowserMain";
+import MetadataBrowserMain from "../metadata-browser/MetadataBrowserMain";
 import DeleteFileDialog from "./DeleteFileDialog";
 
-import { useMetadata } from "../context/MetadataContext";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import { useMetadata } from "../../context/MetadataContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 
-import type { AudioUserTags } from "../types/AudioUserTags";
-import type { AudioFileFullMetadata } from "../types/AudioFileFullMetadata";
+import type { AudioUserTags } from "../../types/AudioUserTags";
+import type { AudioFileFullMetadata } from "../../types/AudioFileFullMetadata";
 
 type ReadMetadataResponse = { result: AudioFileFullMetadata }; 
 

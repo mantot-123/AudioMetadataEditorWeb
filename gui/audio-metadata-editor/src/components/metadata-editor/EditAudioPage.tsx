@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 import MetadataEditorForm from "./MetadataEditorForm";
 import MetadataViewTable from "./MetadataViewTable";
 import MetadataAlbumArt from "./MetadataAlbumArt";

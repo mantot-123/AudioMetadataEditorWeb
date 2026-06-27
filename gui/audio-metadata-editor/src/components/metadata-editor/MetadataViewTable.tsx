@@ -1,5 +1,5 @@
-import { useCurrentFile } from "../context/CurrentFileContext";
-import { useMetadata } from "../context/MetadataContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
+import { useMetadata } from "../../context/MetadataContext";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 bytes";

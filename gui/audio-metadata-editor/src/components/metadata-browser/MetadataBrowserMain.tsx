@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import { useCurrentFile } from "../context/CurrentFileContext";
-import { useMetadata } from "../context/MetadataContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
+import { useMetadata } from "../../context/MetadataContext";
 
-import MetadataBrowserTable from "./MetadataBrowserTable";
+import MetadataBrowserTable from "../MetadataBrowserTable";
 import MetaBrowserErrorDialog from "./MetaBrowserErrorDialog";
 
 interface MetadataBrowserProps {

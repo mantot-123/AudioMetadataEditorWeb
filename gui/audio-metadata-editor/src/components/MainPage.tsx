@@ -1,11 +1,11 @@
-import StartPage from "./StartPage";
-import EditAudioPage from "./EditAudioPage";
+import StartPage from "./start-page/StartPage";
+import EditAudioPage from "./editor-main/EditAudioPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useMetadata } from "../context/MetadataContext";
 import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router";
 
-function EditorMainPage() {
+function MainPage() {
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -38,4 +38,4 @@ function EditorMainPage() {
   );
 }
 
-export default EditorMainPage;
+export default MainPage;
