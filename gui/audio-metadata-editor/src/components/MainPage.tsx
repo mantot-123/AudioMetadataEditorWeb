@@ -1,5 +1,5 @@
 import StartPage from "./start-page/StartPage";
-import EditAudioPage from "./editor-main/EditAudioPage";
+import EditAudioPage from "./metadata-editor/EditAudioPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useMetadata } from "../context/MetadataContext";
 import { useEffect } from "react";
