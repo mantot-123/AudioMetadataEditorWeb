@@ -3,6 +3,7 @@ import MainPage from "./components/MainPage";
 import './App.css'
 import CurrentFileProvider from './context/CurrentFileContext';
 import MetadataProvider from "./context/MetadataContext";
+import TagFormProvider from './context/TagFormContext';
 import { BrowserRouter } from 'react-router';
 
 function App() {
@@ -11,7 +12,9 @@ function App() {
       <BrowserRouter>
         <CurrentFileProvider>
           <MetadataProvider>
-            <MainPage />
+            <TagFormProvider>
+              <MainPage />
+            </TagFormProvider>
           </MetadataProvider>
         </CurrentFileProvider>
       </BrowserRouter>

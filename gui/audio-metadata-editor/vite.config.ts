@@ -8,6 +8,9 @@ export default defineConfig({
     proxy: {
       '/all-files': 'http://127.0.0.1:5000',
       '/read-metadata': 'http://127.0.0.1:5000',
+      '/apply-metadata': 'http://127.0.0.1:5000',
+      '/rename-file': 'http://127.0.0.1:5000',
+      '/get-file': 'http://127.0.0.1:5000'
     },
   },
 })

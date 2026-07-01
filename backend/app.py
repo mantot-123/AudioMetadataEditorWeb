@@ -67,6 +67,7 @@ def all_files():
 
                 fpath = os.path.abspath(os.path.join(root, f))
                 rel_path = os.path.relpath(fpath, fulldir)
+                dir = os.path.dirname(fpath)
                 ext = os.path.splitext(fpath)[1].lower()
                 stat = os.stat(fpath)
 
@@ -76,6 +77,7 @@ def all_files():
                     "name": f,
                     "rel_path": rel_path,
                     "full_path": fpath,
+                    "dir": dir,
                     "size": os.path.getsize(fpath),
                     "file_ext": ext,
                     "mime_type": mime_type,
@@ -121,21 +123,28 @@ def get_file():
             raise Exception("Access denied: Invalid file name")
         
         # check if file's type is supported
-        file_ext = os.path.splitext(filename)[1].lower()
-        if not file_ext in AUDIO_TYPES:
+        if not os.path.splitext(filename)[1].lower() in AUDIO_TYPES:
             raise Exception(f"File {fullpath} has an unsupported file type.")
         
         # check file read access
         if not os.access(fullpath, os.R_OK):
             raise Exception(f"File {fullpath} has insufficient read permissions.")
 
+        fulldir = os.path.abspath(AUDIO_FILES_DIR)
+        fpath = os.path.join(fulldir, filename)
+        rel_path = os.path.relpath(fpath, fulldir)
+        dir = os.path.dirname(fpath)
+        ext = os.path.splitext(fpath)[1].lower()
         stat = os.stat(fullpath)
         mime_type, encoding = mimetypes.guess_type(fullpath)
 
         details = {
-            "name": filename,
+            "name": os.path.basename(filename),
+            "rel_path": rel_path,
+            "full_path": fpath,
+            "dir": dir,
             "size": os.path.getsize(fullpath),
-            "file_ext": file_ext,
+            "file_ext": ext,
             "mime_type": mime_type,
             "modify_time": stat.st_mtime
         }
@@ -150,30 +159,33 @@ def get_file():
 @app.route("/rename-file", methods=["POST", "GET"])
 def rename_file():
     try:
-        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
+        working_dir_full = os.path.abspath(AUDIO_FILES_DIR)
+        data = request.get_json()
 
-        current_fname = request.form.get("current_fname")
-        new_fname = request.form.get("new_fname")
-
-        if not current_fname:
-            raise Exception("Please enter the current file's name. (current_fname)")
+        if not data:
+            raise ValueError("No data provided.")
         
-        if not new_fname:
-            raise Exception("Please enter a new file name. (new_fname)")
+        if not "filename" in data or not data["filename"]:
+            raise ValueError("File name is required.")
+        
+        if not "new_name" in data or not data["new_name"]:
+            raise ValueError("Please enter a new file name")
+        
+        current_fname = data["filename"]
+        new_fname = data["new_name"]
         
         # check if the file exists
-        filepath = os.path.join(directory_abs, current_fname)
-        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
-        if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+        if not os.path.isfile(current_fname):
+            raise FileNotFoundError(f"File {current_fname} does not exist.")
         
-        current_fname_path = os.path.join(directory_abs, current_fname)
-        new_fname_path = os.path.join(directory_abs, new_fname)
+        dir = os.path.abspath(os.path.dirname(current_fname)) # directory of the current name of the file
+        new_fname_path = os.path.join(dir, new_fname)
+
         # prevent directory traversal attacks
-        if not current_fname_path.startswith(directory_abs):
+        if not current_fname.startswith(working_dir_full):
             raise Exception("Access denied: Invalid current filename")
         
-        if not new_fname_path.startswith(directory_abs):
+        if not new_fname_path.startswith(working_dir_full):
             raise Exception("Access denied: Invalid new filename")
 
         # check if file extension supported for both current and new filenames
@@ -189,13 +201,19 @@ def rename_file():
         if current_fname_ext != new_fname_ext:
             raise ValueError(f"Current and new file names must have matching file extensions.")
 
-        os.rename(current_fname_path, new_fname_path)
+        os.rename(current_fname, new_fname_path)
 
-        return {"success": f"Successfully renamed file {current_fname_path} to {new_fname_path}"}, 200
+        rel_path = os.path.relpath(new_fname_path, working_dir_full)
+
+        return {
+            "result": f"Successfully renamed file {current_fname} to {new_fname_path}",
+            "new_path": new_fname_path,
+            "rel_path": rel_path,
+        }, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": str(e)}, 400
+        return {"result": str(e)}, 400
 
 
 @app.route("/delete-file")
@@ -227,10 +245,10 @@ def delete_file():
 
         os.remove(filepath)
 
-        return {"success": f"Successfully deleted file {filename}"}, 200
+        return {"result": f"Successfully deleted file {filename}"}, 200
     except Exception as e:
         traceback.print_exc()
-        return {"error": str(e)}
+        return {"result": str(e)}, 400
 
 
 @app.route("/browse-metadata", methods=["POST", "GET"])
@@ -252,7 +270,7 @@ def browse_metadata():
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": "Unable to fetch metadata tag results."}, 400
+        return {"error": "Unable to fetch metadata tag results.", "result": {}}, 400
 
 
 @app.route("/read-metadata", methods=["GET", "POST"])

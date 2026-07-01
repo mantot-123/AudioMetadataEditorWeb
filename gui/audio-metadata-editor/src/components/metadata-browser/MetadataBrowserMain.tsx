@@ -19,7 +19,7 @@ type MetadataBrowserResult = {
   genre: string;
   album: string;
   trackNumber: string;
-  discNumber?: string;
+  discNumber: string;
   dateReleased: string;
 };
 
@@ -34,8 +34,6 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
 
   const {
     setUserTagValue,
-    setTrackNumberValue,
-    setDiscNumberValue
   } = useMetadata();
 
   // get row from the metadata table that was selected
@@ -50,8 +48,8 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
     setUserTagValue("year", d.year);
     setUserTagValue("genre", d.genre);
     setUserTagValue("album", d.album);
-    setTrackNumberValue("track_number", d.trackNumber === "" ? null : Number(d.trackNumber));
-    setDiscNumberValue("disc_number", !d.discNumber ? null : Number(d.discNumber));
+    setUserTagValue("track_number", d.trackNumber);
+    setUserTagValue("disc_number", d.discNumber);
   };
 
   if(!show) return null;
