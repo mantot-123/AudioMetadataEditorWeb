@@ -6,6 +6,7 @@ import type { AudioUserTags } from "../types/AudioUserTags";
 type TagFormContextType = {
   userTags: AudioUserTags;
   setTagFormValue: <K extends keyof AudioUserTags>(key: K, value: AudioUserTags[K]) => void,
+  setAllFormTags: (tags: AudioUserTags) => void
 };
 
 type UserTagFormUpdater<K extends keyof AudioUserTags> = AudioUserTags[K] | ((currentValue: AudioUserTags[K]) => AudioUserTags[K]);
@@ -33,9 +34,10 @@ export default function TagFormProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const setAllFormTags = (tags: AudioUserTags) => setUserTags(tags);
 
   return ( 
-    <TagFormContext.Provider value={ { userTags, setTagFormValue } }>
+    <TagFormContext.Provider value={ { userTags, setTagFormValue, setAllFormTags } }>
       {children}
     </TagFormContext.Provider>
   );

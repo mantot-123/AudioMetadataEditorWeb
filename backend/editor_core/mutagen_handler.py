@@ -8,7 +8,7 @@ from mutagen.mp4 import MP4, MP4Cover
 from mutagen.oggvorbis import OggVorbis
 from mutagen.asf import ASF, ASFUnicodeAttribute, ASFByteArrayAttribute
 from mutagen.flac import FLAC
-from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE
+from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE, TAG_SYS_MAP
 
 # PATTERN FOR CHECKING VALID TRACK/DISC NUMBER INPUTS
 TRCK_DISC_PATTERN = r"^\d+(/\d+)?$"
@@ -28,6 +28,7 @@ class MutagenHandler:
         ext = os.path.splitext(self.audio_src)[1].lower()
 
         file_type = EXT_TO_TYPE[ext]
+        tag_sys_name = TAG_SYS_MAP[file_type]
 
         # get the appropriate metadata tag mapping for a specific file type
         tag_map = AUDIO_TAG_MAPPING[file_type]
@@ -35,7 +36,7 @@ class MutagenHandler:
         # get audio stream information (bitrate, sample rate, audio channel count etc.)
         # exists in every audio file type
         result = {
-            "filepath": self.audio_src,
+            "tag_sys": tag_sys_name,
             "format": file_type,
             "duration": round(audio_file.info.length, 2),
             "bitrate":  getattr(audio_file.info, "bitrate", None), # "audio_file.info" for basic audio stream info

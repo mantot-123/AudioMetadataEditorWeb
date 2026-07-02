@@ -186,3 +186,14 @@ EXT_TO_TYPE = {
     ".wav":  "wav",
     ".wave": "wav",
 }
+
+
+TAG_SYS_MAP = {
+    "mp3": "id3",
+    "flac": "vorbis",
+    "ogg": "vorbis",
+    "mp4": "mp4",
+    "wma": "asf",
+    "wav": "id3",
+    "aiff": "id3",
+}

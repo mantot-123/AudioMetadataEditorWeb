@@ -1,7 +1,6 @@
 import type { AudioUserTags } from "./AudioUserTags";
 
 export type AudioFileFullMetadata = {
-    filepath: string;
     format: string;
     duration: number;
     bitrate: number | null;

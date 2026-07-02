@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useCurrentFile } from "../../context/CurrentFileContext";
 
 function RenameAudioFileForm() {
-  const { fileInfo,  updateCurrentFile } = useCurrentFile();
+  const { fileInfo,  updateCurrentFileValue } = useCurrentFile();
   const fileNameWithoutExt = (name: string, ext: string): string => {
     if (!name) return "";
     if (ext && name.toLowerCase().endsWith(ext.toLowerCase())) {
@@ -30,7 +30,7 @@ function RenameAudioFileForm() {
       });
 
       const renameResultMsg: string = renameResponse.data.result as string;
-      const newRelPath: string = renameResponse.data.rel_path as string;
+      const newRelPath: string = renameResponse.data.full_path as string;
 
       const newFileDetails = await axios.get<AudioFile>("/get-file", {
         params: { filename: newRelPath },

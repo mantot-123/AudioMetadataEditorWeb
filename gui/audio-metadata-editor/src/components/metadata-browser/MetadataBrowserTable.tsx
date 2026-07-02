@@ -1,194 +1,177 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 
-import { useMetadata } from "../../context/MetadataContext";
+import type { AudioUserTags } from "../../types/AudioUserTags";
 
 // sample data for track information. this can be replaced
-const SAMPLE_TRACKS = [
+const SAMPLE_TRACKS: AudioUserTags[] = [
   {
-    id: 1,
     title: "Bohemian Rhapsody",
-    artist: "Queen",
+    album_artist: "Queen",
     year: "1975",
     genre: "Rock",
     album: "A Night at the Opera",
-    trackNumber: "11/12",
-    dateReleased: "31 October 1975"
+    track_number: "11/12",
+    disc_number: "1"
   },
   {
-    id: 2,
     title: "Blinding Lights",
-    artist: "The Weeknd",
+    album_artist: "The Weeknd",
     year: "2019",
     genre: "Synth-pop",
     album: "After Hours",
-    trackNumber: "2/14",
-    dateReleased: "29 November 2019"
+    track_number: "2/14",
+    disc_number: "1"
   },
   {
-    id: 3,
     title: "Hotel California",
-    artist: "Eagles",
+    album_artist: "Eagles",
     year: "1977",
     genre: "Soft Rock",
     album: "Hotel California",
-    trackNumber: "1/9",
-    dateReleased: "10 February 1977"
+    track_number: "1/9",
+    disc_number: "1"
   },
   {
-    id: 4,
     title: "Smells Like Teen Spirit",
-    artist: "Nirvana",
+    album_artist: "Nirvana",
     year: "1991",
     genre: "Grunge",
     album: "Nevermind",
-    trackNumber: "1/13",
-    dateReleased: "10 September 1991"
+    track_number: "1/13",
+    disc_number: "1"
   },
   {
-    id: 5,
     title: "Rolling in the Deep",
-    artist: "Adele",
+    album_artist: "Adele",
     year: "2010",
     genre: "Soul",
     album: "21",
-    trackNumber: "1/11",
-    dateReleased: "29 November 2010"
+    track_number: "1/11",
+    disc_number: "1"
   },
   {
-    id: 6,
     title: "Billie Jean",
-    artist: "Michael Jackson",
+    album_artist: "Michael Jackson",
     year: "1982",
     genre: "R&B",
     album: "Thriller",
-    trackNumber: "6/9",
-    dateReleased: "2 January 1983"
+    track_number: "6/9",
+    disc_number: "1"
   },
   {
-    id: 7,
     title: "Shape of You",
-    artist: "Ed Sheeran",
+    album_artist: "Ed Sheeran",
     year: "2017",
     genre: "Pop",
     album: "Divide",
-    trackNumber: "1/16",
-    dateReleased: "6 January 2017"
+    track_number: "1/16",
+    disc_number: "1"
   },
   {
-    id: 8,
     title: "Good as Hell",
-    artist: "Lizzo",
+    album_artist: "Lizzo",
     year: "2016",
     genre: "Pop",
     album: "Coconut Oil",
-    trackNumber: "3/5",
-    dateReleased: "30 September 2016"
+    track_number: "3/5",
+    disc_number: "1"
   },
   {
-    id: 9,
     title: "Lose Yourself",
-    artist: "Eminem",
+    album_artist: "Eminem",
     year: "2002",
     genre: "Hip-Hop",
     album: "8 Mile Soundtrack",
-    trackNumber: "1/16",
-    dateReleased: "28 October 2002"
+    track_number: "1/16",
+    disc_number: "1"
   },
   {
-    id: 10,
     title: "Watermelon Sugar",
-    artist: "Harry Styles",
+    album_artist: "Harry Styles",
     year: "2019",
     genre: "Pop Rock",
     album: "Fine Line",
-    trackNumber: "2/12",
-    dateReleased: "16 May 2019"
+    track_number: "2/12",
+    disc_number: "1"
   },
   {
-    id: 11,
     title: "Megalovania",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2015",
     genre: "Chiptune",
     album: "Undertale Soundtrack",
-    trackNumber: "101/101",
-    dateReleased: "15 September 2015"
+    track_number: "101/101",
+    disc_number: "1"
   },
   {
-    id: 12,
     title: "Undertale",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2015",
     genre: "Chiptune",
     album: "Undertale Soundtrack",
-    trackNumber: "83/101",
-    dateReleased: "15 September 2015"
+    track_number: "83/101",
+    disc_number: "1"
   },
   {
-    id: 13,
     title: "Hopes and Dreams",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2015",
     genre: "Chiptune",
     album: "Undertale Soundtrack",
-    trackNumber: "96/101",
-    dateReleased: "15 September 2015"
+    track_number: "96/101",
+    disc_number: "1"
   },
   {
-    id: 14,
     title: "Death by Glamour",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2015",
     genre: "Chiptune",
     album: "Undertale Soundtrack",
-    trackNumber: "62/101",
-    dateReleased: "15 September 2015"
+    track_number: "62/101",
+    disc_number: "1"
   },
   {
-    id: 15,
     title: "Spear of Justice",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2015",
     genre: "Chiptune",
     album: "Undertale Soundtrack",
-    trackNumber: "49/101",
-    dateReleased: "15 September 2015"
+    track_number: "49/101",
+    disc_number: "1"
   },
   {
-    id: 16,
     title: "Field of Hopes and Dreams",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2018",
     genre: "Chiptune",
     album: "Deltarune Chapter 1 OST",
-    trackNumber: "4/24",
-    dateReleased: "31 October 2018"
+    track_number: "4/24",
+    disc_number: "1"
   },
   {
-    id: 17,
     title: "A Cyber's World?",
-    artist: "Toby Fox",
+    album_artist: "Toby Fox",
     year: "2021",
     genre: "Chiptune",
     album: "Deltarune Chapter 2 OST",
-    trackNumber: "12/38",
-    dateReleased: "17 September 2021"
+    track_number: "12/38",
+    disc_number: "1"
   }
 ];
 
 
 interface MetadataBrowserTableProps {
   initialQuery: string
-  initialSelected: object | null,
+  initialSelected: AudioUserTags | null,
   onRowSelect(d: any): void
 }
 
-function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: MetadataBrowserTableProps) {
+function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: MetadataBrowserTableProps) {  
   const [query, setQuery] = useState<string>(initialQuery);
 
   // keep track of the row that was selected so it gets an "active" status
-  const [selected, setSelected] = useState<object | null>(initialSelected); 
+  const [selected, setSelected] = useState<AudioUserTags | null>(initialSelected); 
   const [results, setResults] = useState(SAMPLE_TRACKS);
 
   return ( 
@@ -233,7 +216,6 @@ function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: Me
                 <th>Album</th>
                 <th>Track #</th>
                 <th>Disc #</th>
-                <th>Date released</th>
               </tr>
             </thead>
             <tbody>
@@ -252,12 +234,11 @@ function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: Me
                 >
                   <td>{d.title}</td>
                   <td>{d.album}</td>
-                  <td>{d.artist}</td>
+                  <td>{d.album_artist}</td>
                   <td>{d.genre}</td>
                   <td>{d.album}</td>
-                  <td>{d.trackNumber}</td>
-                  <td>{d.trackNumber}</td>
-                  <td>{d.dateReleased}</td>
+                  <td>{d.track_number}</td>
+                  <td>{d.disc_number}</td>
                 </tr>
               ))}
             </tbody>

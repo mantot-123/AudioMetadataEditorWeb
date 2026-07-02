@@ -1,7 +1,6 @@
 import StartPage from "./start-page/StartPage";
 import EditAudioPage from "./metadata-editor/EditAudioPage";
 import { useCurrentFile } from "../context/CurrentFileContext";
-import { useMetadata } from "../context/MetadataContext";
 import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router";
 
@@ -9,20 +8,16 @@ function MainPage() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const { updateCurrentFile } = useCurrentFile();
-
-  const { resetMetadata } = useMetadata();
+  const { updateCurrentFileValue, resetCurrentFile } = useCurrentFile();
 
   useEffect(() => {
     if(location.pathname !== "/edit") {
-      updateCurrentFile(null);
-      resetMetadata();
+      resetCurrentFile();
     }
-  }, [location.pathname, updateCurrentFile, resetMetadata])
+  }, [location.pathname, updateCurrentFileValue]);
 
   const goBack = () => {
-    updateCurrentFile(null);
-    resetMetadata();
+    resetCurrentFile();
     navigate("/");
   };
 

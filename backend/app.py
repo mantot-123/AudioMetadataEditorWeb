@@ -75,7 +75,6 @@ def all_files():
 
                 details = {
                     "name": f,
-                    "rel_path": rel_path,
                     "full_path": fpath,
                     "dir": dir,
                     "size": os.path.getsize(fpath),
@@ -94,7 +93,7 @@ def all_files():
         traceback.print_exc()
         return {"error": msg}, 400
 
-@app.route("/get-file/", methods=["GET"])
+@app.route("/get-file", methods=["GET"])
 def get_file():
     '''
     GET BASE FILE DETAILS. INCLUDE:
@@ -124,7 +123,7 @@ def get_file():
         
         # check if file's type is supported
         if not os.path.splitext(filename)[1].lower() in AUDIO_TYPES:
-            raise Exception(f"File {fullpath} has an unsupported file type.")
+            Exception(f"Read failed. File is detected to be an '{os.path.splitext(filename)[1].lower()}' file, which is not an audio type.")
         
         # check file read access
         if not os.access(fullpath, os.R_OK):
@@ -138,9 +137,12 @@ def get_file():
         stat = os.stat(fullpath)
         mime_type, encoding = mimetypes.guess_type(fullpath)
 
-        details = {
+        reader = MutagenHandler(fullpath)
+
+        # base file info + metadata
+        metadata = reader.read_metadata()
+        base_details = {
             "name": os.path.basename(filename),
-            "rel_path": rel_path,
             "full_path": fpath,
             "dir": dir,
             "size": os.path.getsize(fullpath),
@@ -148,12 +150,14 @@ def get_file():
             "mime_type": mime_type,
             "modify_time": stat.st_mtime
         }
-        return details, 200
+
+        result = metadata | base_details
+        return {"error": None, "result": result}, 200
     
     except Exception as e:
         msg = f"Failed to read file: {e}"
         traceback.print_exc()
-        return {"error": msg}, 400
+        return {"error": msg, "result": {}}, 400
     
 
 @app.route("/rename-file", methods=["POST", "GET"])

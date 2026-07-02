@@ -1,78 +1,72 @@
 import { createContext, useCallback, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { AudioFile } from "../types/AudioFile";
+import type { AudioUserTags } from "../types/AudioUserTags";
+
+type CurrentFileUpdater<K extends keyof AudioFile> = AudioFile[K] | ((currentValue: AudioFile[K]) => AudioFile[K]);
 
 type CurrentFileContextType = {
   fileInfo: AudioFile | null,
-  updateCurrentFile: (updates: Partial<AudioFile> | null) => void
+  updateCurrentFileValue: <K extends keyof AudioFile>(key: K, value: CurrentFileUpdater<K>) => void;
+  updateUserTagValue: <K extends keyof AudioUserTags>(key: K, value: AudioUserTags[K]) => void,
+  resetCurrentFile: () => void
 }
 
-const isAudioFile = (value: unknown): value is AudioFile => {
-  if (!value || typeof value !== "object") return false;
-
-  const file = value as AudioFile;
-  return (
-    typeof file.name === "string" &&
-    typeof file.rel_path === "string" &&
-    typeof file.full_path === "string" &&
-    typeof file.size === "number" &&
-    typeof file.file_ext === "string" &&
-    (typeof file.mime_type === "string" || file.mime_type === null) &&
-    typeof file.modify_time === "number"
-  );
-};
+const INITIAL_FILE: AudioFile = {
+  name: null,
+  full_path: null,
+  size: null,
+  file_ext: null,
+  mime_type: null,
+  modify_time: null,
+  tag_sys: null,
+  format: null,
+  duration: null,
+  bitrate: null,
+  channels: null,
+  sample_rate: null,
+  tags: {
+    title: null,
+    album_artist: null,
+    year: null,
+    genre: null,
+    album: null,
+    track_number: null,
+    disc_number: null,
+  }
+}
 
 // stores information about the current file that is opened
 // also saves them on to the disk, so the file can be immediately loaded when the app is reopened
 export const CurrentFileContext = createContext<CurrentFileContextType | null>(null);
 
 export default function CurrentFileProvider({ children }: { children: ReactNode }) {
-  const [fileInfo, setFileInfo] = useState<AudioFile | null>(() => {
-    // check if a "currentFile" key exists in the local storage
-    // if yes, load that file
-    // if no, or the value in the key is corrupted, then use no selected file
-    try {
-      const saved: string | null = localStorage.getItem("currentFile");
-      if(!saved) return null;
+  const [fileInfo, setFileInfo] = useState<AudioFile>(INITIAL_FILE);
 
-      const parsed = JSON.parse(saved);
-
-      if(!isAudioFile(parsed))
-        return null;
-
-      return parsed;
-
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    if (!fileInfo) {
-      localStorage.removeItem("currentFile");
-      return;
-    }
-
-    localStorage.setItem("currentFile", JSON.stringify(fileInfo));
-  }, [fileInfo]);
-
-  const updateCurrentFile = useCallback((updates: Partial<AudioFile> | null) => {
-    if (updates === null) {
-      setFileInfo(null);
-      return;
-    }
-
+  //
+  const updateCurrentFileValue = useCallback(<K extends keyof AudioFile>(key: K, value: CurrentFileUpdater<K>) => {
     setFileInfo((currentFile) => {
-      if (!currentFile) {
-        return isAudioFile(updates) ? updates : null;
-      }
-
-      return { ...currentFile, ...updates };
+      const base = currentFile ?? INITIAL_FILE;
+      return {
+        ...base,
+        [key]: typeof value === "function"
+          ? value(base[key])
+          : value
+      };
     });
   }, []);
 
+  
+  // setter method for user metadata fields
+  const updateUserTagValue = <K extends keyof AudioUserTags>(key: K, value: AudioUserTags[K]) => {
+    updateCurrentFileValue("tags", (tags) => ({ ...tags, [key]: value }));
+  };
+
+  //
+  const resetCurrentFile = () => setFileInfo(INITIAL_FILE);
+
   return ( 
-    <CurrentFileContext.Provider value={{ fileInfo, updateCurrentFile }}>
+    <CurrentFileContext.Provider value={{ fileInfo, updateCurrentFileValue, updateUserTagValue, resetCurrentFile }}>
       {children}
     </CurrentFileContext.Provider> 
   );

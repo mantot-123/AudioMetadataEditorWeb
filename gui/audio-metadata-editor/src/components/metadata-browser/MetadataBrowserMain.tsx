@@ -1,27 +1,18 @@
 import { useState } from "react";
 
 import { useCurrentFile } from "../../context/CurrentFileContext";
-import { useMetadata } from "../../context/MetadataContext";
+import { useTagForm } from "../../context/TagFormContext";
 
 import MetadataBrowserTable from "./MetadataBrowserTable";
 import MetaBrowserErrorDialog from "./MetaBrowserErrorDialog";
+
+import type { AudioUserTags } from "../../types/AudioUserTags";
 
 interface MetadataBrowserProps {
   show: boolean,
   onClose(): void,
 }
 
-type MetadataBrowserResult = {
-  id: number;
-  title: string;
-  artist: string;
-  year: string;
-  genre: string;
-  album: string;
-  trackNumber: string;
-  discNumber: string;
-  dateReleased: string;
-};
 
 // display the browser as a modal
 function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
@@ -29,28 +20,20 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   const [isError, setIsError] = useState<boolean>(false);
 
   const [query, setQuery] = useState<string>("");
-  const [selected, setSelected] = useState<MetadataBrowserResult | null>(null);
+  const [selected, setSelected] = useState<AudioUserTags | null>(null);
   const [errMsg, setErrMsg] = useState<string>("");
 
   const {
-    setUserTagValue,
-  } = useMetadata();
+    setAllFormTags
+  } = useTagForm();
 
   // get row from the metadata table that was selected
-  const onRowSelect = (d: MetadataBrowserResult) => {
+  const onRowSelect = (d: AudioUserTags) => {
     if(selected !== d) return setSelected(d);
     setSelected(null);
   }
 
-  const onConfirm = (d: MetadataBrowserResult) => {
-    setUserTagValue("title", d.title);
-    setUserTagValue("album_artist", d.artist);
-    setUserTagValue("year", d.year);
-    setUserTagValue("genre", d.genre);
-    setUserTagValue("album", d.album);
-    setUserTagValue("track_number", d.trackNumber);
-    setUserTagValue("disc_number", d.discNumber);
-  };
+  const onConfirm = (d: AudioUserTags) => setAllFormTags(d);
 
   if(!show) return null;
 
@@ -66,7 +49,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
             </div>
             <div className="modal-body">
               <div className="p-2">
-                <h5>Editing file: {fileInfo?.rel_path ?? fileInfo?.name}</h5>
+                <h5>Editing file: {fileInfo?.full_path ?? fileInfo?.name}</h5>
                 
                 <MetadataBrowserTable 
                   initialQuery={query}

@@ -5,16 +5,14 @@ import axios from "axios";
 import MetadataBrowserMain from "../metadata-browser/MetadataBrowserMain";
 import DeleteFileDialog from "./DeleteFileDialog";
 
-import { useMetadata } from "../../context/MetadataContext";
 import { useCurrentFile } from "../../context/CurrentFileContext";
 import { useTagForm } from "../../context/TagFormContext";
 
-import type { AudioFileFullMetadata } from "../../types/AudioFileFullMetadata";
-import type { AudioUserTags } from "../../types/AudioUserTags";
+import type { AudioFile } from "../../types/AudioFile";
 
 type ReadMetadataResponse = { 
   error: string;
-  result: AudioFileFullMetadata;
+  result: AudioFile;
 }; 
 
 const FormStatusMsgType = {
@@ -33,14 +31,8 @@ type FormStatusMessage = {
 function MetadataEditorForm() {
   const { 
     fileInfo, 
-    updateCurrentFile 
+    updateCurrentFileValue,
   } = useCurrentFile();
-
-  const {
-    metadata,
-    setAudioFileMetadataValue,
-    setUserTagValue,
-  } = useMetadata();
 
   const {
     userTags,
@@ -53,8 +45,6 @@ function MetadataEditorForm() {
   const [statusMsg, setStatusMsg] = useState<FormStatusMessage | null>(null);
   const [isFormProcessing, setIsFormProcessing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [newUserTags, setNewUserTags] = useState<AudioUserTags | null>(null);
 
   const onDelDialogOpen = (): void => {
     setShowFileDelModal(true);
@@ -76,7 +66,7 @@ function MetadataEditorForm() {
 
   useEffect(() => {
     const loadMetadata = async (): Promise<void> => {
-      const filename = fileInfo?.rel_path;
+      const filename = fileInfo?.full_path;
 
       if(!filename) return;
 
@@ -88,20 +78,27 @@ function MetadataEditorForm() {
             : { type: FormStatusMsgType.Info, msg: "Loading audio file..." }
         );
 
-        const response = await axios.get<ReadMetadataResponse>("/read-metadata", {
+        const response = await axios.get<ReadMetadataResponse>("/get-file", {
           params: { filename }
         });
 
         const result = response.data.result;
-        const tags = result.tags;
 
-        setAudioFileMetadataValue("filepath", result.filepath);
-        setAudioFileMetadataValue("format", result.format);
-        setAudioFileMetadataValue("duration", result.duration);
-        setAudioFileMetadataValue("bitrate", result.bitrate);
-        setAudioFileMetadataValue("channels", result.channels);
-        setAudioFileMetadataValue("sample_rate", result.sample_rate);
-        setAudioFileMetadataValue("tags", tags);
+        const tags = result.tags;
+        
+        updateCurrentFileValue("name", result.name);
+        updateCurrentFileValue("full_path", result.full_path);
+        updateCurrentFileValue("size", result.size);
+        updateCurrentFileValue("file_ext", result.file_ext);
+        updateCurrentFileValue("mime_type", result.mime_type);
+        updateCurrentFileValue("modify_time", result.modify_time);
+        updateCurrentFileValue("tag_sys", result.tag_sys);
+        updateCurrentFileValue("format", result.format);
+        updateCurrentFileValue("duration", result.duration);
+        updateCurrentFileValue("bitrate", result.bitrate);
+        updateCurrentFileValue("channels", result.channels);
+        updateCurrentFileValue("sample_rate", result.sample_rate);
+        updateCurrentFileValue("tags", tags);
 
         setTagFormValue("title", tags.title);
         setTagFormValue("album_artist", tags.album_artist);
@@ -110,22 +107,15 @@ function MetadataEditorForm() {
         setTagFormValue("album", tags.album);
         setTagFormValue("track_number", tags.track_number);
         setTagFormValue("disc_number", tags.disc_number);
-
-        setUserTagValue("title", tags.title);
-        setUserTagValue("album_artist", tags.album_artist);
-        setUserTagValue("year", tags.year);
-        setUserTagValue("genre", tags.genre);
-        setUserTagValue("album", tags.album);
-        setUserTagValue("track_number", tags.track_number);
-        setUserTagValue("disc_number", tags.disc_number);
         
         setIsLoadingSuccess(true);
+
         setStatusMsg((prev) => (isResultMessage(prev) ? prev : null));
 
       } catch(error) {
         setStatusMsg({
           type: FormStatusMsgType.Error,
-          msg: (error as any).response.data["error"] || "Unable to read file metadata"
+          msg: "An error occurred while reading your file"
         });
 
         setIsLoadingSuccess(false);
@@ -147,15 +137,15 @@ function MetadataEditorForm() {
       setStatusMsg({type: FormStatusMsgType.Info, msg: "Saving changes..."});
 
       const tagChangeResponse = await axios.post("/apply-metadata", {
-        filename: fileInfo?.rel_path,
+        filename: fileInfo?.full_path,
         new_tags: {
-          title: metadata.tags.title,
-          album_artist: metadata.tags.album_artist,
-          album: metadata.tags.album,
-          year: metadata.tags.year,
-          track_number: metadata.tags.track_number,
-          disc_number: metadata.tags.disc_number,
-          genre: metadata.tags.genre,
+          title: userTags.title,
+          album_artist: userTags.album_artist,
+          album: userTags.album,
+          year: userTags.year,
+          track_number: userTags.track_number,
+          disc_number: userTags.disc_number,
+          genre: userTags.genre,
         }
       });
       
@@ -178,7 +168,7 @@ function MetadataEditorForm() {
       { isLoading &&
         <>
           <div className="alert alert-info">
-            {<p><strong>Info:</strong>{statusMsg?.msg ?? "Loading..."}</p>}
+            {<p><strong>Info:</strong> {statusMsg?.msg ?? "Loading..."}</p>}
           </div>
         </>
       }
