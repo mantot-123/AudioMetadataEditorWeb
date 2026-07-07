@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { AudioFileFullMetadata } from "../types/AudioFileFullMetadata";
 import type { AudioUserTags } from "../types/AudioUserTags";
 
 type TagFormContextType = {

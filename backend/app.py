@@ -258,23 +258,41 @@ def delete_file():
 @app.route("/browse-metadata", methods=["POST", "GET"])
 def browse_metadata():
     try:
-        data = request.get_json()
-
-        if not data:
-            return {"error": "No data provided."}, 400
+        data = {
+            "title": request.args.get("title"),
+            "album_artist": request.args.get("album_artist"),
+            "album": request.args.get("album"),
+            "year": request.args.get("year"),
+            "track_number": request.args.get("track_number"),
+            "disc_number": request.args.get("disc_number"),
+            "genre": request.args.get("genre")
+        }
         
         # search metadata relating to the track
         # results = musicbrainz_handler.api_search_recordings(data)
         results = musicbrainz_handler.search_musicbrainz_recordings(data)
 
-        if not results:
-            return results, 200
-
-        return results, 200
+        return {"error": None, "result": results}, 200
     
     except Exception as e:
         traceback.print_exc()
         return {"error": "Unable to fetch metadata tag results.", "result": {}}, 400
+
+
+@app.route("/browse-art", methods=["GET", "POST"])
+def browse_art():
+    try:
+        data = {
+            "size": "small",
+            "album_id": request.args.get("album_id")
+        }
+        result = musicbrainz_handler.search_musicbrainz_art_data(data)
+        
+        return {"error": None, "result": result}, 200
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e), "result": None}, 200
 
 
 @app.route("/read-metadata", methods=["GET", "POST"])

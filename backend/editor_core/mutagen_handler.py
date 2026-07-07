@@ -3,7 +3,7 @@ import os
 import mutagen
 import traceback
 import re
-from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1, TALB, TRCK, TDRC, TYER, TCON, TPOS
+from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1, TPE2, TALB, TRCK, TDRC, TYER, TCON, TPOS
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.oggvorbis import OggVorbis
 from mutagen.asf import ASF, ASFUnicodeAttribute, ASFByteArrayAttribute
@@ -247,6 +247,9 @@ class MutagenHandler:
         for key, val in new_tags.items():
             if key == "title":
                 audio_id3["TIT2"] = TIT2(encoding=3, text=[val])
+
+            elif key == "album_artist":
+                audio_id3["TPE2"] = TPE2(encoding=3, text=[val])
 
             elif key == "artist":
                 audio_id3["TPE1"] = TPE1(encoding=3, text=[val])

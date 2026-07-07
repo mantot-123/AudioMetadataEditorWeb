@@ -79,7 +79,7 @@ function MetadataEditorForm() {
         );
 
         const response = await axios.get<ReadMetadataResponse>("/get-file", {
-          params: { filename }
+          params: { filename: filename }
         });
 
         const result = response.data.result;
@@ -197,7 +197,7 @@ function MetadataEditorForm() {
           onClick={() => setShowMetaBrowser(true)}
         >
           <Icon icon="material-symbols:search" />
-          Search in metadata browser...
+          Search album and track information...
         </button>
 
         <form id="edit-tags-form" onSubmit={onSaveChanges} method="POST">
