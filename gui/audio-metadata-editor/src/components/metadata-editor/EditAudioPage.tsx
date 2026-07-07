@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 import MetadataEditorForm from "./MetadataEditorForm";
 import MetadataViewTable from "./MetadataViewTable";
 import MetadataAlbumArt from "./MetadataAlbumArt";
@@ -21,7 +21,7 @@ function EditAudioPage({ goBack }: { goBack(): void }) {
     <div className="m-4">
       <h1>Edit Metadata</h1>
       <button className="btn btn-link" onClick={() => goBack()}>&lt;&lt; Back</button>
-      <h3 className="my-3">Editing: {fileInfo?.rel_path}</h3>
+      <h3 className="my-3">Editing: {fileInfo?.full_path}</h3>
       <div className="row">
         <div className="col-sm-8">
           <div className="btn-group">

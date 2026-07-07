@@ -67,6 +67,7 @@ def all_files():
 
                 fpath = os.path.abspath(os.path.join(root, f))
                 rel_path = os.path.relpath(fpath, fulldir)
+                dir = os.path.dirname(fpath)
                 ext = os.path.splitext(fpath)[1].lower()
                 stat = os.stat(fpath)
 
@@ -74,8 +75,8 @@ def all_files():
 
                 details = {
                     "name": f,
-                    "rel_path": rel_path,
                     "full_path": fpath,
+                    "dir": dir,
                     "size": os.path.getsize(fpath),
                     "file_ext": ext,
                     "mime_type": mime_type,
@@ -92,7 +93,7 @@ def all_files():
         traceback.print_exc()
         return {"error": msg}, 400
 
-@app.route("/get-file/", methods=["GET"])
+@app.route("/get-file", methods=["GET"])
 def get_file():
     '''
     GET BASE FILE DETAILS. INCLUDE:
@@ -121,59 +122,74 @@ def get_file():
             raise Exception("Access denied: Invalid file name")
         
         # check if file's type is supported
-        file_ext = os.path.splitext(filename)[1].lower()
-        if not file_ext in AUDIO_TYPES:
-            raise Exception(f"File {fullpath} has an unsupported file type.")
+        if not os.path.splitext(filename)[1].lower() in AUDIO_TYPES:
+            Exception(f"Read failed. File is detected to be an '{os.path.splitext(filename)[1].lower()}' file, which is not an audio type.")
         
         # check file read access
         if not os.access(fullpath, os.R_OK):
             raise Exception(f"File {fullpath} has insufficient read permissions.")
 
+        fulldir = os.path.abspath(AUDIO_FILES_DIR)
+        fpath = os.path.join(fulldir, filename)
+        rel_path = os.path.relpath(fpath, fulldir)
+        dir = os.path.dirname(fpath)
+        ext = os.path.splitext(fpath)[1].lower()
         stat = os.stat(fullpath)
         mime_type, encoding = mimetypes.guess_type(fullpath)
 
-        details = {
-            "name": filename,
+        reader = MutagenHandler(fullpath)
+
+        # base file info + metadata
+        metadata = reader.read_metadata()
+        base_details = {
+            "name": os.path.basename(filename),
+            "full_path": fpath,
+            "dir": dir,
             "size": os.path.getsize(fullpath),
-            "file_ext": file_ext,
+            "file_ext": ext,
             "mime_type": mime_type,
             "modify_time": stat.st_mtime
         }
-        return details, 200
+
+        result = metadata | base_details
+        return {"error": None, "result": result}, 200
     
     except Exception as e:
         msg = f"Failed to read file: {e}"
         traceback.print_exc()
-        return {"error": msg}, 400
+        return {"error": msg, "result": {}}, 400
     
 
 @app.route("/rename-file", methods=["POST", "GET"])
 def rename_file():
     try:
-        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
+        working_dir_full = os.path.abspath(AUDIO_FILES_DIR)
+        data = request.get_json()
 
-        current_fname = request.form.get("current_fname")
-        new_fname = request.form.get("new_fname")
-
-        if not current_fname:
-            raise Exception("Please enter the current file's name. (current_fname)")
+        if not data:
+            raise ValueError("No data provided.")
         
-        if not new_fname:
-            raise Exception("Please enter a new file name. (new_fname)")
+        if not "filename" in data or not data["filename"]:
+            raise ValueError("File name is required.")
+        
+        if not "new_name" in data or not data["new_name"]:
+            raise ValueError("Please enter a new file name")
+        
+        current_fname = data["filename"]
+        new_fname = data["new_name"]
         
         # check if the file exists
-        filepath = os.path.join(directory_abs, current_fname)
-        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
-        if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+        if not os.path.isfile(current_fname):
+            raise FileNotFoundError(f"File {current_fname} does not exist.")
         
-        current_fname_path = os.path.join(directory_abs, current_fname)
-        new_fname_path = os.path.join(directory_abs, new_fname)
+        dir = os.path.abspath(os.path.dirname(current_fname)) # directory of the current name of the file
+        new_fname_path = os.path.join(dir, new_fname)
+
         # prevent directory traversal attacks
-        if not current_fname_path.startswith(directory_abs):
+        if not current_fname.startswith(working_dir_full):
             raise Exception("Access denied: Invalid current filename")
         
-        if not new_fname_path.startswith(directory_abs):
+        if not new_fname_path.startswith(working_dir_full):
             raise Exception("Access denied: Invalid new filename")
 
         # check if file extension supported for both current and new filenames
@@ -189,13 +205,19 @@ def rename_file():
         if current_fname_ext != new_fname_ext:
             raise ValueError(f"Current and new file names must have matching file extensions.")
 
-        os.rename(current_fname_path, new_fname_path)
+        os.rename(current_fname, new_fname_path)
 
-        return {"success": f"Successfully renamed file {current_fname_path} to {new_fname_path}"}, 200
+        rel_path = os.path.relpath(new_fname_path, working_dir_full)
+
+        return {
+            "result": f"Successfully renamed file {current_fname} to {new_fname_path}",
+            "new_path": new_fname_path,
+            "rel_path": rel_path,
+        }, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": str(e)}, 400
+        return {"result": str(e)}, 400
 
 
 @app.route("/delete-file")
@@ -227,32 +249,50 @@ def delete_file():
 
         os.remove(filepath)
 
-        return {"success": f"Successfully deleted file {filename}"}, 200
+        return {"result": f"Successfully deleted file {filename}"}, 200
     except Exception as e:
         traceback.print_exc()
-        return {"error": str(e)}
+        return {"result": str(e)}, 400
 
 
 @app.route("/browse-metadata", methods=["POST", "GET"])
 def browse_metadata():
     try:
-        data = request.get_json()
-
-        if not data:
-            return {"error": "No data provided."}, 400
+        data = {
+            "title": request.args.get("title"),
+            "album_artist": request.args.get("album_artist"),
+            "album": request.args.get("album"),
+            "year": request.args.get("year"),
+            "track_number": request.args.get("track_number"),
+            "disc_number": request.args.get("disc_number"),
+            "genre": request.args.get("genre")
+        }
         
         # search metadata relating to the track
         # results = musicbrainz_handler.api_search_recordings(data)
         results = musicbrainz_handler.search_musicbrainz_recordings(data)
 
-        if not results:
-            return results, 200
-
-        return results, 200
+        return {"error": None, "result": results}, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": "Unable to fetch metadata tag results."}, 400
+        return {"error": "Unable to fetch metadata tag results.", "result": {}}, 400
+
+
+@app.route("/browse-art", methods=["GET", "POST"])
+def browse_art():
+    try:
+        data = {
+            "size": "small",
+            "album_id": request.args.get("album_id")
+        }
+        result = musicbrainz_handler.search_musicbrainz_art_data(data)
+        
+        return {"error": None, "result": result}, 200
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e), "result": None}, 200
 
 
 @app.route("/read-metadata", methods=["GET", "POST"])
@@ -285,7 +325,7 @@ def read_metadata():
         reader = MutagenHandler(filepath)
         results = reader.read_metadata()
 
-        return { "result": results }, 200
+        return { "error": None, "result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -324,7 +364,7 @@ def get_album_art():
         reader = AlbumArtHandler(filepath)
         results = reader.get_cover_art()
 
-        return { "result": results }, 200
+        return { "error": None, "result": results }, 200
     
     except Exception as e:
         traceback.print_exc()
@@ -371,16 +411,13 @@ def apply_metadata():
             raise Exception(f"Write failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
 
         writer = MutagenHandler(filepath)
-        results = writer.set_metadata(data["new_tags"])
+        result = writer.set_metadata(data["new_tags"])
 
-        return {"result": results }, 200
+        return {"result": result }, 200
     
     except Exception as e:
         traceback.print_exc()
-        return {
-            "error": f"Unable to write audio metadata: {str(e)}",
-            "result": {}
-        }, 400
+        return { "result": str(e) }, 400
 
 
 
@@ -415,7 +452,7 @@ def apply_album_art():
         img_ext = os.path.splitext(img_file.filename)[1].lower()
 
         if not img_ext in ALLOWED_IMG_TYPES:
-            return {"result": "ERROR: Unsupported file type"} , 400
+            raise Exception("Unsupported file type")
         
         img_file.seek(0)
 
@@ -431,10 +468,7 @@ def apply_album_art():
         return {"result": "Album art set successfully"}, 200
     except Exception as e:
         traceback.print_exc()
-        return {
-            "error": str(e), 
-            "result": {}
-        }, 400
+        return { "result": str(e) }, 400
 
     
 

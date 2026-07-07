@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import UploadFileDialog from "./UploadFileDialog";
-import SettingsDialog from "./SettingsDialog";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import SettingsDialog from "../settings/SettingsDialog";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 
-import type { AudioFile } from "../types/AudioFile";
+import type { AudioFile } from "../../types/AudioFile";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 B";
@@ -29,13 +29,9 @@ const formatModifiedTime = (timestamp: number): string => {
   return new Date(timestamp * 1000).toLocaleString();
 };
 
-const formatFileType = (file: AudioFile): string => {
-  return file.mime_type ?? file.file_ext.replace(".", "").toUpperCase();
-};
-
 function AudioFilesTable() {
   const navigate = useNavigate();
-  const { updateCurrentFile } = useCurrentFile();
+  const { updateCurrentFileValue } = useCurrentFile();
   const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState<boolean>(false);
   const [files, setFiles] = useState<AudioFile[]>([]);
@@ -98,7 +94,7 @@ function AudioFilesTable() {
           <tr>
             <th>File name</th>
             <th>File size</th>
-            <th>File type</th>
+            <th>MIME type</th>
             <th>Date modified</th>
           </tr>
         </thead>
@@ -121,19 +117,20 @@ function AudioFilesTable() {
             </tr>
           )}
 
-          {!isLoading && !errorMessage && files.map((file) => (
+          {!isLoading && !errorMessage && files.map((file, index) => (
             <tr
-              key={file.name}
+              key={`${index}-{file.name}`}
               style={ {cursor: "pointer"} }
               onClick={() => {
-                updateCurrentFile(file);
+                updateCurrentFileValue("name", file.name);
+                updateCurrentFileValue("full_path", file.full_path);
                 navigate("/edit");
               }}
             >
-              <td>{file.rel_path}</td>
-              <td>{formatFileSize(file.size)}</td>
-              <td>{formatFileType(file)}</td>
-              <td>{formatModifiedTime(file.modify_time)}</td>
+              <td>{file.full_path}</td>
+              <td>{formatFileSize(file.size ?? 0)}</td>
+              <td>{file.mime_type}</td>
+              <td>{formatModifiedTime(file.modify_time ?? 0)}</td>
             </tr>
           ))}
         </tbody>

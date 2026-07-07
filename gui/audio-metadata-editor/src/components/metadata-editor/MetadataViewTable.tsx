@@ -1,7 +1,7 @@
-import { useCurrentFile } from "../context/CurrentFileContext";
-import { useMetadata } from "../context/MetadataContext";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 
-const formatFileSize = (bytes: number): string => {
+const formatFileSize = (bytes: number | null): string | null => {
+  if(bytes === null) return null;
   if (bytes === 0) return "0 bytes";
 
   const units = ["bytes", "KB", "MB", "GB", "TB"];
@@ -11,7 +11,9 @@ const formatFileSize = (bytes: number): string => {
   return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
 };
 
-const formatDuration = (rate: number): string => {
+const formatDuration = (rate: number | null | undefined): string | null => {
+  if(rate === null || rate === undefined) return null;
+
   const minutes: number = Math.trunc(rate / 60);
   const seconds: number = Math.trunc(rate % 60);
 
@@ -20,13 +22,13 @@ const formatDuration = (rate: number): string => {
   return `${paddedMins}:${paddedSecs}`;
 };
 
-const formatBitRate = (rate: number | null): string => {
-  if(!rate) return "-";
+const formatBitRate = (rate: number | null | undefined): string | null => {
+  if(rate === null || rate === undefined) return null;
   return `${rate / 1000} kbps`;
 };
 
-const formatSampleRate = (rate: number | null) => {
-  if(!rate) return "-";
+const formatSampleRate = (rate: number | null | undefined): string | null => {
+  if(rate === null || rate === undefined) return null;
 
   const value: number = rate > 1000 ? rate / 1000 : rate;
   const unit: string = rate > 1000 ? "kHz" : "Hz";
@@ -34,48 +36,45 @@ const formatSampleRate = (rate: number | null) => {
   return `${value} ${unit}`;
 }
 
-const formatModifiedTime = (timestamp: number): string => {
+const formatModifiedTime = (timestamp: number | null | undefined): string | null => {
+  if(timestamp === null || timestamp === undefined) return null;
+
   return new Date(timestamp * 1000).toLocaleString();
 };
 
-const formatNullableValue = (value: string | number | null | undefined): string => {
-  if (value === null || value === undefined || value === "") return "-";
+const formatNullableValue = (value: any): string => {
+  if (value === null || value === "" || value === undefined) return "-";
   return String(value);
 };
 
 function MetadataViewTable() {
   const { fileInfo } = useCurrentFile();
-  const { metadata } = useMetadata();
-  const tags = metadata.tags;
 
   const rowsBasic = [
     { group: "File", name: "File name", value: fileInfo?.name },
     { group: "File", name: "Path", value: fileInfo?.full_path },
     { group: "File", name: "MIME type", value: fileInfo?.mime_type },
     { group: "File", name: "File extension", value: fileInfo?.file_ext },
-    { group: "File", name: "File size", value: fileInfo ? formatFileSize(fileInfo.size) : null },
-    { group: "File", name: "Date modified", value: fileInfo ? formatModifiedTime(fileInfo.modify_time) : null }
+    { group: "File", name: "File size", value: fileInfo ? formatFileSize(fileInfo?.size) : null },
+    { group: "File", name: "Date modified", value: fileInfo ? formatModifiedTime(fileInfo?.modify_time) : null }
     ]
 
   const rowsStream = [
-    { group: "Stream", name: "File path", value: metadata.filepath },
-    { group: "Stream", name: "Format", value: metadata.format },
-    { group: "Stream", name: "Duration", value: metadata.duration ? `${formatDuration(metadata.duration)}` : null },
-    { group: "Stream", name: "Bitrate", value: formatBitRate(metadata.bitrate) },
-    { group: "Stream", name: "Channels", value: metadata.channels },
-    { group: "Stream", name: "Sample rate", value: formatSampleRate(metadata.sample_rate) }
+    { group: "Stream", name: "Format", value: fileInfo?.format },
+    { group: "Stream", name: "Duration", value: fileInfo?.duration ? `${formatDuration(fileInfo?.duration)}` : null },
+    { group: "Stream", name: "Bitrate", value: formatBitRate(fileInfo?.bitrate as number | null) },
+    { group: "Stream", name: "Channels", value: fileInfo?.channels },
+    { group: "Stream", name: "Sample rate", value: formatSampleRate(fileInfo?.sample_rate) }
   ];
 
   const rowsUserTags = [
-    { group: "Tags", name: "Title", value: tags.title },
-    { group: "Tags", name: "Album artist", value: tags.album_artist },
-    { group: "Tags", name: "Album", value: tags.album },
-    { group: "Tags", name: "Year", value: tags.year },
-    { group: "Tags", name: "Genre", value: tags.genre },
-    { group: "Tags", name: "Track number", value: tags.track_number?.track_number },
-    { group: "Tags", name: "Total tracks", value: tags.track_number?.total_tracks },
-    { group: "Tags", name: "Disc number", value: tags.disc_number?.disc_number },
-    { group: "Tags", name: "Total discs", value: tags.disc_number?.total_discs },
+    { group: "Tags", name: "Title", value: fileInfo?.tags.title },
+    { group: "Tags", name: "Album artist", value: fileInfo?.tags.album_artist },
+    { group: "Tags", name: "Album", value: fileInfo?.tags.album },
+    { group: "Tags", name: "Year", value: fileInfo?.tags.year },
+    { group: "Tags", name: "Genre", value: fileInfo?.tags.genre },
+    { group: "Tags", name: "Track number", value: fileInfo?.tags.track_number },
+    { group: "Tags", name: "Disc number", value: fileInfo?.tags.disc_number },
   ];
 
 	return (
