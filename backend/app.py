@@ -39,7 +39,7 @@ ALLOWED_IMG_TYPES = {
 
 # set user agent for musicbrainz API to identify the application
 musicbrainzngs.set_useragent(
-    "OdioTag",
+    "Melaudic",
     "1.0.0",
     "https://github.com/mantot-123/AudioMetadataEditorWeb/"
 )
