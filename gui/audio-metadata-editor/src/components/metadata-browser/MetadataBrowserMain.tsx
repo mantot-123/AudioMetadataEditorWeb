@@ -20,7 +20,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   
   const [isError, setIsError] = useState<boolean>(false);
   const [query, setQuery] = useState<any>(null);
-  const [selected, setSelected] = useState<object | null>(null);
+  const [selected, setSelected] = useState<any>(null);
   const [errMsg, setErrMsg] = useState<string>("");
 
   useEffect(() => {
@@ -29,9 +29,8 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   }, [])
 
   // get row from the metadata table that was selected
-  const onRowSelect = (d: object | null) => {
-    if(selected !== d) return setSelected(d);
-    setSelected(null);
+  const onRowSelect = (d: any) => {
+    setSelected(d);
   }
 
   const onConfirm = (d: any) => {
