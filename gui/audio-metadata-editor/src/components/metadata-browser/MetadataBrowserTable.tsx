@@ -122,6 +122,7 @@ function MetadataBrowserTable({ initialQuery, initialSelected, onRowSelect }: Me
                     onClick={() => { 
                       if(selected?.id === i) {
                         setSelected(null);
+                        onRowSelect(null);
                         return;
                       }
                       const rowSelected = {
