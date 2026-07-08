@@ -24,9 +24,14 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
   const [errMsg, setErrMsg] = useState<string>("");
 
   useEffect(() => {
-    console.log(userTags);
     setQuery(userTags);
-  }, [])
+  }, [userTags.album_artist, 
+    userTags.album, 
+    userTags.title, 
+    userTags.year, 
+    userTags.genre, 
+    userTags.track_number, 
+    userTags.disc_number]);
 
   // get row from the metadata table that was selected
   const onRowSelect = (d: any) => {
@@ -72,7 +77,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
               <div className="d-flex gap-2">
                 <button 
                   type="button" 
-                  className="btn btn-primary" 
+                  className={`btn btn-primary ${selected ? "" : "disabled"}`} 
                   onClick={
                     () => { 
                       if(!selected) {
