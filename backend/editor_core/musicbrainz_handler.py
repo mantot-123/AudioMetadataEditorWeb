@@ -2,6 +2,7 @@ import time
 import traceback
 import musicbrainzngs
 from datetime import datetime
+from .user_error import UserError
 
 # METADATA BROWSER HANDLER FOR AUDIO METADATA TAG LOOKUP
 # UTILISES MUSICBRAINZ'S API
@@ -107,10 +108,10 @@ def search_musicbrainz_recordings(data):
 
 def search_musicbrainz_art_data(query_args):
     if not "size" in query_args or not query_args["size"]:
-        raise Exception("Image size is required")
+        raise UserError("Image size is required")
 
     if not "album_id" in query_args or not query_args["album_id"]:
-        raise Exception("Album/Release MBID is required.")
+        raise UserError("Album/Release MBID is required.")
 
     result = musicbrainzngs.get_image_list(query_args["album_id"])
 

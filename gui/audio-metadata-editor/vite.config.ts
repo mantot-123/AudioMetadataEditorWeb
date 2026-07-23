@@ -12,7 +12,9 @@ export default defineConfig({
       '/rename-file': 'http://127.0.0.1:5000',
       '/get-file': 'http://127.0.0.1:5000',
       '/browse-metadata': 'http://127.0.0.1:5000',
-      '/browse-art': 'http://127.0.0.1:5000'
+      '/browse-art': 'http://127.0.0.1:5000',
+      '/get-album-art': 'http://127.0.0.1:5000',
+      '/apply-album-art': 'http://127.0.0.1:5000'
     },
   },
 })

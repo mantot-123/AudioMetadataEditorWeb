@@ -82,7 +82,7 @@ function MetadataBrowserMain({ show, onClose }: MetadataBrowserProps) {
                     () => { 
                       if(!selected) {
                         setIsError(true);
-                        setErrMsg("Please select a metadata before confirming your selection.");
+                        setErrMsg("Please select a tag before confirming your selection.");
                         return;
                       }
                       onConfirm(selected);

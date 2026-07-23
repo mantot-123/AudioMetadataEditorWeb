@@ -9,6 +9,7 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.asf import ASF, ASFUnicodeAttribute, ASFByteArrayAttribute
 from mutagen.flac import FLAC
 from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE, TAG_SYS_MAP
+from .user_error import UserError
 
 # PATTERN FOR CHECKING VALID TRACK/DISC NUMBER INPUTS
 TRCK_DISC_PATTERN = r"^\d+(/\d+)?$"
@@ -23,7 +24,7 @@ class MutagenHandler:
         audio_file = mutagen.File(self.audio_src)
 
         if not audio_file:
-            raise Exception(f"Could not open file {self.audio_src}")
+            raise UserError(f"Could not open file {self.audio_src}")
 
         ext = os.path.splitext(self.audio_src)[1].lower()
 
@@ -196,7 +197,7 @@ class MutagenHandler:
         audio_file = mutagen.File(self.audio_src)
 
         if not audio_file:
-            raise Exception(f"Could not open file {self.audio_src}")
+            raise UserError(f"Could not open file {self.audio_src}")
 
         ext = os.path.splitext(self.audio_src)[1].lower()
 
@@ -266,12 +267,12 @@ class MutagenHandler:
 
             elif key == "track_number":
                 if not re.search(TRCK_DISC_PATTERN, val):
-                    raise Exception("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
+                    raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                 audio_id3["TRCK"] = TRCK(encoding=3, text=[str(val)])
 
             elif key == "disc_number":
                 if not re.search(TRCK_DISC_PATTERN, val):
-                    raise Exception("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
+                    raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                 audio_id3["TPOS"] = TPOS(encoding=3, text=[str(val)])
 
         audio_id3.save(self.audio_src)
@@ -286,12 +287,12 @@ class MutagenHandler:
             if key in AUDIO_TAG_MAPPING["ogg"]:
                 if key == "track_number":
                     if not re.search(TRCK_DISC_PATTERN, val):
-                        raise Exception("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
+                        raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                     audio_vorbis[AUDIO_TAG_MAPPING["ogg"][key]] = [val]
                     continue
                 elif key == "disc_number":
                     if not re.search(TRCK_DISC_PATTERN, val):
-                        raise Exception("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
+                        raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                     audio_vorbis[AUDIO_TAG_MAPPING["ogg"][key]] = [val]
                     continue
 
@@ -309,10 +310,10 @@ class MutagenHandler:
             
             if key == "track_number" or key == "disc_number":
                 if not re.search(TRCK_DISC_PATTERN, val) and key == "track_number":
-                    raise Exception("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
+                    raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                 
                 if not re.search(TRCK_DISC_PATTERN, val) and key == "disc_number":
-                    raise Exception("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
+                    raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
 
                 # MP4 track/disc numbers are stored as a list of tuples (number, total)
                 if "/" in val:
@@ -337,12 +338,12 @@ class MutagenHandler:
             if key in AUDIO_TAG_MAPPING["wma"]:
                 if key == "track_number":
                     if not re.search(TRCK_DISC_PATTERN, val):
-                        raise Exception("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
+                        raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                     audio_asf[AUDIO_TAG_MAPPING["wma"][key]] = [val]
                     continue
                 elif key == "disc_number":
                     if not re.search(TRCK_DISC_PATTERN, val):
-                        raise Exception("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
+                        raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                     audio_asf[AUDIO_TAG_MAPPING["wma"][key]] = [val]
                     continue
 

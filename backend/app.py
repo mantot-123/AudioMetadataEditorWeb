@@ -6,13 +6,15 @@ import time
 import musicbrainzngs
 from flask import Flask, request
 
-from editor_core import (musicbrainz_handler, 
+from editor_core import (user_error,
+                        musicbrainz_handler, 
                         album_art_handler,
                         mutagen_handler, 
                         settings_handler)
 
 from editor_core.mutagen_handler import MutagenHandler
 from editor_core.album_art_handler import AlbumArtHandler
+from editor_core.user_error import UserError
 
 import ssl
 import certifi
@@ -57,7 +59,7 @@ def all_files():
     try:
         fulldir = os.path.abspath(AUDIO_FILES_DIR)
         if not os.path.isdir(fulldir):
-            raise FileNotFoundError(f"Directory {fulldir} does not exist.")
+            raise UserError(f"Directory {fulldir} does not exist.")
 
         all_files = []
         for root, subdirs, files in os.walk(fulldir):
@@ -88,8 +90,14 @@ def all_files():
         all_files.reverse()
 
         return all_files, 200
+    except UserError as e:
+        msg = str(e)
+        traceback.print_exc()
+        return {"error": msg}, 400
+    
     except Exception as e:
-        msg = f"Error occurred while accessing directory: {e}"
+        msg = f"An unknown server error occurred. Check the log for details."
+        # todo add logging for the backend
         traceback.print_exc()
         return {"error": msg}, 400
 
@@ -106,7 +114,7 @@ def get_file():
     try:
         filename = request.args.get("filename")
         if not filename:
-            raise ValueError("File name is blank. Please enter a file name...")
+            raise UserError("Please enter a file name")
 
         # check if file exists
         fullpath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
@@ -114,20 +122,20 @@ def get_file():
 
         # check file existence
         if not os.path.isfile(fullpath):
-            raise FileNotFoundError(f"File {fullpath} does not exist.")
+            raise UserError(f"The file {fullpath} does not exist.")
         
         # prevent path traversal attacks - make sure files can only be accessed
         # inside the AUDIO_FILES_DIR absolute directory
         if not fullpath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid file name")
+            raise UserError("The file name you entered is invalid. Please enter a valid file name.")
         
         # check if file's type is supported
         if not os.path.splitext(filename)[1].lower() in AUDIO_TYPES:
-            Exception(f"Read failed. File is detected to be an '{os.path.splitext(filename)[1].lower()}' file, which is not an audio type.")
+            raise UserError(f"The file you are currently attempting to access ('{os.path.splitext(filename)[1].lower()}') is not an audio file.")
         
         # check file read access
         if not os.access(fullpath, os.R_OK):
-            raise Exception(f"File {fullpath} has insufficient read permissions.")
+            raise UserError(f"You do not have the permission to access the file: {fullpath}")
 
         fulldir = os.path.abspath(AUDIO_FILES_DIR)
         fpath = os.path.join(fulldir, filename)
@@ -153,11 +161,17 @@ def get_file():
 
         result = metadata | base_details
         return {"error": None, "result": result}, 200
-    
-    except Exception as e:
-        msg = f"Failed to read file: {e}"
+
+    except UserError as e:
+        msg = str(e)
         traceback.print_exc()
         return {"error": msg, "result": {}}, 400
+    
+    except Exception as e:
+        msg = f"An unknown server error occurred. Check the log for details."
+        # todo add logging for the backend
+        traceback.print_exc()
+        return {"error": msg}, 400
     
 
 @app.route("/rename-file", methods=["POST", "GET"])
@@ -167,43 +181,43 @@ def rename_file():
         data = request.get_json()
 
         if not data:
-            raise ValueError("No data provided.")
+            raise UserError("Please enter the current file's name and its new file name.")
         
         if not "filename" in data or not data["filename"]:
-            raise ValueError("File name is required.")
+            raise UserError("Please enter the current name of the file.")
         
         if not "new_name" in data or not data["new_name"]:
-            raise ValueError("Please enter a new file name")
+            raise UserError("Please enter a new file name.")
         
         current_fname = data["filename"]
         new_fname = data["new_name"]
         
         # check if the file exists
         if not os.path.isfile(current_fname):
-            raise FileNotFoundError(f"File {current_fname} does not exist.")
+            raise UserError(f"File {current_fname} does not exist.")
         
         dir = os.path.abspath(os.path.dirname(current_fname)) # directory of the current name of the file
         new_fname_path = os.path.join(dir, new_fname)
 
         # prevent directory traversal attacks
         if not current_fname.startswith(working_dir_full):
-            raise Exception("Access denied: Invalid current filename")
+            raise UserError("The current file name you entered is invalid. Please enter a new file name.")
         
         if not new_fname_path.startswith(working_dir_full):
-            raise Exception("Access denied: Invalid new filename")
+            raise UserError("The new file name you entered is invalid. Please enter a new file name")
 
         # check if file extension supported for both current and new filenames
         # + check for matching extensions
         current_fname_ext = os.path.splitext(current_fname)[1].lower()
         if not current_fname_ext in AUDIO_TYPES:
-            raise Exception(f"File format not supported. File is detected to be an '{current_fname_ext}' file, which is not an audio type.")
+            raise UserError(f"The file you are trying to access is not an audio file.")
 
         new_fname_ext = os.path.splitext(new_fname)[1].lower()
         if not new_fname_ext in AUDIO_TYPES:
-            raise Exception(f"New file name does not have the supported audio extension. File is detected to be an '{new_fname_ext}' file.")
+            raise UserError(f"The new file name does not have the supported audio extension.")
 
         if current_fname_ext != new_fname_ext:
-            raise ValueError(f"Current and new file names must have matching file extensions.")
+            raise UserError(f"The current and new file names must have matching file extensions.")
 
         os.rename(current_fname, new_fname_path)
 
@@ -215,9 +229,15 @@ def rename_file():
             "rel_path": rel_path,
         }, 200
     
-    except Exception as e:
+    except UserError as e:
         traceback.print_exc()
         return {"result": str(e)}, 400
+    
+    except Exception as e:
+        msg = f"An unknown server error occurred. Check the log for details."
+        # todo do logging
+        traceback.print_exc()
+        return {"result": msg}, 400
 
 
 @app.route("/delete-file")
@@ -226,33 +246,38 @@ def delete_file():
         filename = request.form.get("filename")
 
         if not filename:
-            raise ValueError("File name is required")
+            raise UserError("Please enter a file name")
     
         filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
         directory_abs = os.path.abspath(AUDIO_FILES_DIR)
 
         # check if the file exists
         if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+            raise UserError(f"The file {filepath} does not exist.")
         
         # prevent directory traversal attacks
         if not filepath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid file name.")
+            raise UserError("The file name you have entered is invalid. Please enter a valid file name.")
 
         # check file write access - if deletion is allowed on the file
         if not os.access(filepath, os.W_OK):
-            raise Exception(f"Insufficient write permissions for file {filepath}")
+            raise UserError(f"You do not have the permissions to delete the file '{filepath}'")
         
         file_ext = os.path.splitext(filename)[1].lower()
         if not file_ext in AUDIO_TYPES:
-            raise Exception(f"Deletion failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+            raise UserError(f"Unable to delete the file. The file is a '{file_ext}' file, which is not an audio file type.")
 
         os.remove(filepath)
 
         return {"result": f"Successfully deleted file {filename}"}, 200
-    except Exception as e:
+    
+    except UserError as e:
         traceback.print_exc()
         return {"result": str(e)}, 400
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {"result": "An unknown server error occurred. Check the log for details."}, 400
 
 
 @app.route("/browse-metadata", methods=["POST", "GET"])
@@ -273,10 +298,14 @@ def browse_metadata():
         results = musicbrainz_handler.search_musicbrainz_recordings(data)
 
         return {"error": None, "result": results}, 200
+
+    except UserError as e:
+        traceback.print_exc()
+        return {"error": str(e), "result": {}}, 400
     
     except Exception as e:
         traceback.print_exc()
-        return {"error": "Unable to fetch metadata tag results.", "result": {}}, 400
+        return {"error": "An unknown server error occurred. Check the log for details.", "result": {}}, 400
 
 
 @app.route("/browse-art", methods=["GET", "POST"])
@@ -290,9 +319,13 @@ def browse_art():
         
         return {"error": None, "result": result}, 200
     
-    except Exception as e:
+    except UserError as e:
         traceback.print_exc()
-        return {"error": str(e), "result": None}, 200
+        return {"error": str(e), "result": None}, 400
+
+    except UserError as e:
+        traceback.print_exc()
+        return {"error": "An unknown server error occurred. Check the log for details.", "result": None}, 400
 
 
 @app.route("/read-metadata", methods=["GET", "POST"])
@@ -301,75 +334,88 @@ def read_metadata():
         filename = request.args.get("filename")
 
         if not filename:
-            raise ValueError("File name is required")
+            raise UserError("File name is required")
         
         directory_abs = os.path.abspath(AUDIO_FILES_DIR)
         filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
 
         # check if the file exists
         if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+            raise UserError(f"File {filepath} does not exist.")
         
         # prevent directory traversal attacks
         if not filepath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid file name.")
+            raise UserError("The file name you entered is invalid. Please enter a valid file name.")
 
         # check file read access permissions - if reading metadata is allowed on the file
         if not os.access(filepath, os.R_OK):
-            raise Exception(f"Insufficient read permissions for file {filepath}")
+            raise UserError(f"You do not have the permissions to read the file {filepath}")
         
         file_ext = os.path.splitext(filename)[1].lower()
         if not file_ext in AUDIO_TYPES:
-            raise Exception(f"Read failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+            raise UserError(f"Unable to access the file. The file is a '{file_ext}' file, which is not an audio file type.")
 
         reader = MutagenHandler(filepath)
         results = reader.read_metadata()
 
         return { "error": None, "result": results }, 200
     
+    except UserError as e:
+        traceback.print_exc()
+        return {
+            "error": str(e),
+            "result": {}
+        }, 400
+    
     except Exception as e:
         traceback.print_exc()
         return {
-            "error": f"{str(e)}",
-            "result": {}
+            "error": "An unknown server error occurred. Check the log for details.", 
+            "result": None
         }, 400
-
 
 @app.route("/get-album-art")
 def get_album_art():
     try:
         filename = request.args.get("filename")
         if not filename:
-            raise ValueError("File name is required")
+            raise UserError("File name is required")
         
         directory_abs = os.path.abspath(AUDIO_FILES_DIR)
         filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
 
         # check if the file exists
         if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+            raise UserError(f"File {filepath} does not exist.")
         
         # prevent directory traversal attacks
         if not filepath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid file name.")
+            raise UserError("The file name you entered is invalid. Please enter a valid file name.")
 
         # check file read access permissions - if reading metadata is allowed on the file
         if not os.access(filepath, os.R_OK):
-            raise Exception(f"Insufficient read permissions for file {filepath}")
+            raise UserError(f"Insufficient read permissions for file {filepath}")
         
         file_ext = os.path.splitext(filename)[1].lower()
         if not file_ext in AUDIO_TYPES:
-            raise Exception(f"Read failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+            raise UserError(f"Unable to access the file. The file is an '{file_ext}' file, which is not an audio type.")
 
         reader = AlbumArtHandler(filepath)
         results = reader.get_cover_art()
 
         return { "error": None, "result": results }, 200
-    
+
+    except UserError as e:
+        traceback.print_exc()
+        return {
+            "error": str(e),
+            "result": {}
+        }, 400
+
     except Exception as e:
         traceback.print_exc()
         return {
-            "error": f"Unable to read album art metadata: {str(e)}",
+            "error": "A server error occurred while getting album art metadata. Please check the log for details.",
             "result": {}
         }, 400
 
@@ -380,13 +426,13 @@ def apply_metadata():
         data = request.get_json()
         
         if not data:
-            raise ValueError("No data provided.")
+            raise UserError("Please enter the file name and provide new tags for the audio file.")
         
         if not "filename" in data or not data["filename"]:
-            raise ValueError("File name is required.")
+            raise UserError("Please enter the name of the file you want to edit.")
         
         if not "new_tags" in data or not data["new_tags"]:
-            raise ValueError("No new tags are provided.")
+            raise UserError("Please provide some new metadata tags for the file.")
         
         filename = data["filename"]
         new_tags = data["new_tags"]
@@ -396,28 +442,32 @@ def apply_metadata():
 
         # check if the file exists
         if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"File {filepath} does not exist.")
+            raise UserError(f"File {filepath} does not exist.")
         
         # prevent directory traversal attacks
         if not filepath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid file name.")
+            raise UserError("The file name you entered is invalid. Please enter a valid file name.")
 
         # check file write access permissions
         if not os.access(filepath, os.W_OK):
-            raise Exception(f"Insufficient write permissions for file {filepath}")
+            raise UserError(f"You do not have the permissions to edit the file {filepath}")
         
         file_ext = os.path.splitext(filename)[1].lower()
         if not file_ext in AUDIO_TYPES:
-            raise Exception(f"Write failed. File is detected to be an '{file_ext}' file, which is not an audio type.")
+            raise UserError(f"Failed to edit metadata. The file you provided is a '{file_ext}' file, which is not an audio file type.")
 
         writer = MutagenHandler(filepath)
-        result = writer.set_metadata(data["new_tags"])
+        result = writer.set_metadata(new_tags)
 
-        return {"result": result }, 200
-    
-    except Exception as e:
+        return { "result": result }, 200
+
+    except UserError as e:
         traceback.print_exc()
         return { "result": str(e) }, 400
+
+    except Exception as e:
+        traceback.print_exc()
+        return { "result": "An unknown server error occurred. Please check the log for details" }, 400
 
 
 
@@ -428,31 +478,31 @@ def apply_album_art():
         img_file = request.files.get("album_art")
 
         if not img_file:
-            raise Exception("Image file not provided")
+            raise UserError("Please provide an image file")
         
         directory_abs = os.path.abspath(AUDIO_FILES_DIR)
         filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, audio_fname))
 
         # check if the file exists
         if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"Audio file {filepath} does not exist.")
+            raise UserError(f"The audio file {filepath} does not exist.")
         
         # prevent directory traversal attacks
         if not filepath.startswith(directory_abs):
-            raise Exception("Access denied: Invalid audio file name.")
+            raise UserError("Access denied: Invalid audio file name.")
 
         # check file write access permissions
         if not os.access(filepath, os.W_OK):
-            raise Exception(f"Insufficient write permissions for file {filepath}")
+            raise UserError(f"Insufficient write permissions for file {filepath}")
         
         audio_ext = os.path.splitext(audio_fname)[1].lower()
         if not audio_ext in AUDIO_TYPES:
-            raise Exception(f"Write failed. File is detected to be an '{audio_ext}' file, which is not an audio type.")
+            raise UserError(f"Write failed. File is detected to be an '{audio_ext}' file, which is not an audio type.")
 
         img_ext = os.path.splitext(img_file.filename)[1].lower()
 
         if not img_ext in ALLOWED_IMG_TYPES:
-            raise Exception("Unsupported file type")
+            raise UserError("The image you provided has an unsupported file format.")
         
         img_file.seek(0)
 
@@ -466,9 +516,16 @@ def apply_album_art():
         handler.set_cover_art(data)
 
         return {"result": "Album art set successfully"}, 200
-    except Exception as e:
+    
+    except UserError as e:
         traceback.print_exc()
         return { "result": str(e) }, 400
+
+    except Exception as e:
+        traceback.print_exc()
+        return { 
+            "result": "An unknown server error occurred while applying album art metadata. Please check the logs for details." 
+        }, 400
 
     
 
