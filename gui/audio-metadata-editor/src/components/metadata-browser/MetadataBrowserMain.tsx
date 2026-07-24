@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-import { useCurrentFile } from "../../context/CurrentFileContext";
 import { useTagForm } from "../../context/TagFormContext";
 
 import MetadataBrowserTable from "./MetadataBrowserTable";
