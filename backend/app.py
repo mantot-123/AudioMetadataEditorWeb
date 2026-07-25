@@ -328,52 +328,6 @@ def browse_art():
         return {"error": "An unknown server error occurred. Check the log for details.", "result": None}, 400
 
 
-@app.route("/read-metadata", methods=["GET", "POST"])
-def read_metadata():
-    try:
-        filename = request.args.get("filename")
-
-        if not filename:
-            raise UserError("File name is required")
-        
-        directory_abs = os.path.abspath(AUDIO_FILES_DIR)
-        filepath = os.path.abspath(os.path.join(AUDIO_FILES_DIR, filename))
-
-        # check if the file exists
-        if not os.path.isfile(filepath):
-            raise UserError(f"File {filepath} does not exist.")
-        
-        # prevent directory traversal attacks
-        if not filepath.startswith(directory_abs):
-            raise UserError("The file name you entered is invalid. Please enter a valid file name.")
-
-        # check file read access permissions - if reading metadata is allowed on the file
-        if not os.access(filepath, os.R_OK):
-            raise UserError(f"You do not have the permissions to read the file {filepath}")
-        
-        file_ext = os.path.splitext(filename)[1].lower()
-        if not file_ext in AUDIO_TYPES:
-            raise UserError(f"Unable to access the file. The file is a '{file_ext}' file, which is not an audio file type.")
-
-        reader = MutagenHandler(filepath)
-        results = reader.read_metadata()
-
-        return { "error": None, "result": results }, 200
-    
-    except UserError as e:
-        traceback.print_exc()
-        return {
-            "error": str(e),
-            "result": {}
-        }, 400
-    
-    except Exception as e:
-        traceback.print_exc()
-        return {
-            "error": "An unknown server error occurred. Check the log for details.", 
-            "result": None
-        }, 400
-
 @app.route("/get-album-art")
 def get_album_art():
     try:
