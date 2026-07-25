@@ -1,6 +1,5 @@
 import axios from "axios";
 
-import type { AudioFile } from "../types/AudioFile";
 import type { AudioUserTags } from "../types/AudioUserTags";
 
 export async function getDir() {

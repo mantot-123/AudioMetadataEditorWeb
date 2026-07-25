@@ -1,5 +1,6 @@
 import StartPage from "./start-page/StartPage";
 import EditAudioPage from "./metadata-editor/EditAudioPage";
+import CoreNavBar from "./core/CoreNavBar";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router";
@@ -23,6 +24,7 @@ function MainPage() {
 
   return ( 
     <>
+      <CoreNavBar />
       <div className="container">
         <Routes>
           <Route path="/" element={<StartPage />} />
