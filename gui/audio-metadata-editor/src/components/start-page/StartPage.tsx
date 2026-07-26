@@ -1,11 +1,17 @@
 import AudioFilesTable from "./AudioFilesTable";
+import FilesTable from "../core/FilesTable";
 
 function StartPage() {
   return ( 
     <>
-      <h1 className="m-4">Audio File Metadata Editor</h1>
-      <div className="d-flex flex-column">
-        <AudioFilesTable />
+      <div className="d-flex vh-100 overflow-hidden">
+        <div className="flex-grow-1 col-md-7">
+          <FilesTable />
+        </div>
+        <div className="col-md-5 p-4">
+          <h1>Editing form here...</h1>
+          <p>Placeholder content here...</p>
+        </div>
       </div> 
     </>
   );

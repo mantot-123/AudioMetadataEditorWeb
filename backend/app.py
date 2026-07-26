@@ -75,7 +75,9 @@ def all_files():
 
                 mime_type, encoding = mimetypes.guess_type(f)
 
-                details = {
+                tag_reader = MutagenHandler(fpath)
+                metadata = {}
+                base_details = {
                     "name": f,
                     "full_path": fpath,
                     "dir": dir,
@@ -85,21 +87,27 @@ def all_files():
                     "modify_time": stat.st_mtime
                 }
 
+                details = base_details | metadata
+
                 all_files.append(details)
         
         all_files.reverse()
 
-        return all_files, 200
+        return {
+            "error": None,
+            "result": all_files
+        }, 200
+    
     except UserError as e:
         msg = str(e)
         traceback.print_exc()
-        return {"error": msg}, 400
+        return {"error": msg, "result": None}, 400
     
     except Exception as e:
         msg = f"An unknown server error occurred. Check the log for details."
         # todo add logging for the backend
         traceback.print_exc()
-        return {"error": msg}, 400
+        return {"error": msg, "result": None}, 400
 
 @app.route("/get-file", methods=["GET"])
 def get_file():

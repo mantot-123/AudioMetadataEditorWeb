@@ -1,6 +1,7 @@
 import StartPage from "./start-page/StartPage";
 import EditAudioPage from "./metadata-editor/EditAudioPage";
 import CoreNavBar from "./core/CoreNavBar";
+import FilesTable from "./core/FilesTable";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router";
@@ -24,12 +25,19 @@ function MainPage() {
 
   return ( 
     <>
-      <CoreNavBar />
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<StartPage />} />
-          <Route path="/edit" element={<EditAudioPage goBack={goBack}/>} />
-        </Routes>
+      <div className="d-flex flex-column vh-100 overflow-hidden">
+        <CoreNavBar />
+        <div className="d-flex flex-grow-1 overflow-auto">
+          <div className="flex-grow-1 col-md-7">
+            <FilesTable />
+          </div>
+          <div className="flex-grow-1 col-md-5 overflow-auto" style={{ borderLeft: "1px solid #ccc" }}>
+            <Routes>
+              <Route path="/" element={<StartPage />} />
+              <Route path="/edit" element={<EditAudioPage goBack={goBack} />} />
+            </Routes>
+          </div>
+        </div>
       </div>
     </> 
   );
