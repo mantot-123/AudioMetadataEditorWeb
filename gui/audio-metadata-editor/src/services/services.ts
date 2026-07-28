@@ -68,3 +68,23 @@ export async function getFileAlbumArt(path: string) {
     });
     return response;
 }
+
+export async function saveMetadata(path: string, tags: AudioUserTags) {
+    const response = await axios.post("/apply-metadata", {
+        filename: path,
+        new_tags: {
+            title: tags.title,
+            album_artist: tags.album_artist,
+            album: tags.album,
+            year: tags.year,
+            track_number: tags.track_number,
+            disc_number: tags.disc_number,
+            genre: tags.genre,
+        }
+    });
+    return response;
+}
+
+export async function saveAlbumArt(art: any) {
+
+}

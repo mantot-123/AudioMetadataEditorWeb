@@ -1,4 +1,4 @@
-import MainPage from "./components/MainPage";
+import MainPage from "./pages/MainPage";
 import './App.css'
 import CurrentFileProvider from './context/CurrentFileContext';
 import TagFormProvider from './context/TagFormContext';

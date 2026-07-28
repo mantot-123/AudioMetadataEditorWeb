@@ -1,7 +1,7 @@
-import StartPage from "./start-page/StartPage";
-import EditAudioPage from "./metadata-editor/EditAudioPage";
-import CoreNavBar from "./core/CoreNavBar";
-import FilesTable from "./core/FilesTable";
+import StartPage from "../components/start-page/StartPage";
+import EditorPage from "./EditorPage";
+import CoreNavBar from "../components/core/CoreNavBar";
+import FilesTable from "../components/core/FilesTable";
 import { useCurrentFile } from "../context/CurrentFileContext";
 import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router";
@@ -32,10 +32,7 @@ function MainPage() {
             <FilesTable />
           </div>
           <div className="flex-grow-1 col-md-5 overflow-auto" style={{ borderLeft: "1px solid #ccc" }}>
-            <Routes>
-              <Route path="/" element={<StartPage />} />
-              <Route path="/edit" element={<EditAudioPage goBack={goBack} />} />
-            </Routes>
+            <EditorPage />
           </div>
         </div>
       </div>

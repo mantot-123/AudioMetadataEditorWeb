@@ -106,32 +106,32 @@ function FilesTable() {
           }}
         >
           <thead 
-            className="table-dark sticky-top"
+            className="table-light sticky-top"
           >
             <tr>
               <th
-                className="fw-bold text-white"
+                className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("name")}
               >
                 File name{getSortIndicator("name")}
               </th>
               <th
-                className="fw-bold text-white"
+                className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("full_path")}
               >
                 Path{getSortIndicator("full_path")}
               </th>
               <th
-                className="fw-bold text-white"
+                className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("mime_type")}
               >
                 MIME Type{getSortIndicator("mime_type")}
               </th>
               <th
-                className="fw-bold text-white"
+                className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("size")}
               >
@@ -177,7 +177,6 @@ function FilesTable() {
               onClick={() => {
                 updateCurrentFileValue("name", file.name);
                 updateCurrentFileValue("full_path", file.full_path);
-                navigate("/edit");
               }}
               key={`${file.full_path ?? "file"}-${index}`}>
                 <td>{file.name ?? "-"}</td>
