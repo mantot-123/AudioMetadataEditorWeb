@@ -1,5 +1,5 @@
 import MainPage from "./pages/MainPage";
-import './App.css'
+import './App.scss'
 import CurrentFileProvider from './context/CurrentFileContext';
 import TagFormProvider from './context/TagFormContext';
 import { BrowserRouter } from 'react-router';

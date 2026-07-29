@@ -15,16 +15,18 @@ function StreamInfoSection() {
 
   return (
     <>
-      <table className="table table-hover align-middle">
-        <tbody>
-          {rowsStream.map((row) => (
-            <tr key={`${row.group}-${row.name}`}>
-              <th>{row.name}</th>
-              <td>{formatNullableValue(row.value)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="custom-table-container border rounded-3">
+        <table className="table table-hover align-middle">
+          <tbody>
+            {rowsStream.map((row) => (
+              <tr key={`${row.group}-${row.name}`}>
+                <th>{row.name}</th>
+                <td>{formatNullableValue(row.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }

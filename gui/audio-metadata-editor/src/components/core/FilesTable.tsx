@@ -6,11 +6,9 @@ import { getAllFiles } from "../../services/services";
 import { formatFileSizeBytes, formatUnixTime } from "../../helpers/formatHelpers";
 
 import { useCurrentFile } from "../../context/CurrentFileContext";
-import { useNavigate } from "react-router";
 
 function FilesTable() {
   const { updateCurrentFileValue } = useCurrentFile();
-  const navigate = useNavigate();
 
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -93,9 +91,9 @@ function FilesTable() {
   return (
     <>
       <div
+        className="custom-table-container"
         style={{
           height: "100%",
-          overflow: "auto",
         }}
       >
         <table
@@ -138,7 +136,7 @@ function FilesTable() {
                 File Size{getSortIndicator("size")}
               </th>
               <th
-                className="fw-bold text-white"
+                className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("modify_time")}
               >

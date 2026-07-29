@@ -28,10 +28,10 @@ function MainPage() {
       <div className="d-flex flex-column vh-100 overflow-hidden">
         <CoreNavBar />
         <div className="d-flex flex-grow-1 overflow-auto">
-          <div className="flex-grow-1 col-md-7">
+          <div className="flex-grow-1 col-md-8">
             <FilesTable />
           </div>
-          <div className="flex-grow-1 col-md-5 overflow-auto" style={{ borderLeft: "1px solid #ccc" }}>
+          <div className="flex-grow-1 col-md-4 overflow-auto" style={{ borderLeft: "1px solid #ccc" }}>
             <EditorPage />
           </div>
         </div>

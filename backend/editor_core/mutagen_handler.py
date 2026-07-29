@@ -21,10 +21,8 @@ class MutagenHandler:
 
     def read_metadata(self):
         result = {}
+        
         audio_file = mutagen.File(self.audio_src)
-
-        if not audio_file:
-            raise UserError(f"Could not open file {self.audio_src}")
 
         ext = os.path.splitext(self.audio_src)[1].lower()
 
@@ -196,9 +194,6 @@ class MutagenHandler:
         result = {}
         audio_file = mutagen.File(self.audio_src)
 
-        if not audio_file:
-            raise UserError(f"Could not open file {self.audio_src}")
-
         ext = os.path.splitext(self.audio_src)[1].lower()
 
         file_type = EXT_TO_TYPE[ext]
@@ -266,12 +261,12 @@ class MutagenHandler:
                 audio_id3["TCON"] = TCON(encoding=3, text=[val])
 
             elif key == "track_number":
-                if not re.search(TRCK_DISC_PATTERN, val):
+                if not re.search(TRCK_DISC_PATTERN, val) and val:
                     raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                 audio_id3["TRCK"] = TRCK(encoding=3, text=[str(val)])
 
             elif key == "disc_number":
-                if not re.search(TRCK_DISC_PATTERN, val):
+                if not re.search(TRCK_DISC_PATTERN, val) and val:
                     raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                 audio_id3["TPOS"] = TPOS(encoding=3, text=[str(val)])
 
@@ -286,12 +281,12 @@ class MutagenHandler:
         for key, val in new_tags.items():
             if key in AUDIO_TAG_MAPPING["ogg"]:
                 if key == "track_number":
-                    if not re.search(TRCK_DISC_PATTERN, val):
+                    if not re.search(TRCK_DISC_PATTERN, val) and val:
                         raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                     audio_vorbis[AUDIO_TAG_MAPPING["ogg"][key]] = [val]
                     continue
                 elif key == "disc_number":
-                    if not re.search(TRCK_DISC_PATTERN, val):
+                    if not re.search(TRCK_DISC_PATTERN, val) and val:
                         raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                     audio_vorbis[AUDIO_TAG_MAPPING["ogg"][key]] = [val]
                     continue
@@ -309,19 +304,20 @@ class MutagenHandler:
                 continue
             
             if key == "track_number" or key == "disc_number":
-                if not re.search(TRCK_DISC_PATTERN, val) and key == "track_number":
+                if not re.search(TRCK_DISC_PATTERN, val) and val and key == "track_number":
                     raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                 
-                if not re.search(TRCK_DISC_PATTERN, val) and key == "disc_number":
+                if not re.search(TRCK_DISC_PATTERN, val) and val and key == "disc_number":
                     raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
 
                 # MP4 track/disc numbers are stored as a list of tuples (number, total)
-                if "/" in val:
-                    number = int(val.split("/")[0])
-                    total = int(val.split("/")[1])
-                    audio_mp4[AUDIO_TAG_MAPPING["mp4"][key]] = [(number, total)]
-                else:
-                    audio_mp4[AUDIO_TAG_MAPPING["mp4"][key]] = [(int(val), 0)]
+                if val:
+                    if "/" in val:
+                        number = int(val.split("/")[0])
+                        total = int(val.split("/")[1])
+                        audio_mp4[AUDIO_TAG_MAPPING["mp4"][key]] = [(number, total)]
+                    else:
+                        audio_mp4[AUDIO_TAG_MAPPING["mp4"][key]] = [(int(val), 0)]
                 continue
                 
             audio_mp4[AUDIO_TAG_MAPPING["mp4"][key]] = [val]
@@ -337,12 +333,12 @@ class MutagenHandler:
         for key, val in new_tags.items():
             if key in AUDIO_TAG_MAPPING["wma"]:
                 if key == "track_number":
-                    if not re.search(TRCK_DISC_PATTERN, val):
+                    if not re.search(TRCK_DISC_PATTERN, val) and val:
                         raise UserError("Invalid track number format. It must be a number, or in the format: <track number>/<total tracks>")
                     audio_asf[AUDIO_TAG_MAPPING["wma"][key]] = [val]
                     continue
                 elif key == "disc_number":
-                    if not re.search(TRCK_DISC_PATTERN, val):
+                    if not re.search(TRCK_DISC_PATTERN, val) and val:
                         raise UserError("Invalid disc number format. It must be a number, or in the format: <disc number>/<total discs>")
                     audio_asf[AUDIO_TAG_MAPPING["wma"][key]] = [val]
                     continue

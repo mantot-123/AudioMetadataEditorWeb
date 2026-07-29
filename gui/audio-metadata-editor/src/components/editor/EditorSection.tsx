@@ -5,6 +5,7 @@ import { useTagForm } from "../../context/TagFormContext";
 import { getFile, saveMetadata } from "../../services/services";
 import type { AudioFile } from "../../types/AudioFile";
 import type { AudioUserTags } from "../../types/AudioUserTags";
+import AlbumArtSection from "./AlbumArtSection";
 import FormActionBtnDock from "./EditorFormActionBtnDock";
 
 const EMPTY_TAGS: AudioUserTags = {
@@ -102,7 +103,7 @@ function EditorSection() {
   };
 
   return (
-    <div className="position-relative pb-5">
+    <div className="position-relative">
       {isLoading && (
         <div className="alert alert-info">Loading audio file...</div>
       )}
@@ -112,6 +113,8 @@ function EditorSection() {
       )}
 
       <form className="pb-3">
+        <AlbumArtSection />
+
         <div className="my-4">
           <label htmlFor="title" className="form-label">Title:</label>
           <input
