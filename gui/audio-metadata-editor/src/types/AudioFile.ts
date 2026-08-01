@@ -1,6 +1,7 @@
 import type { AudioUserTags } from "./AudioUserTags";
 
 export type AudioFile = {
+  id: number | null;
   name: string | null;
   full_path: string | null;
   size: number | null;
@@ -21,6 +22,7 @@ export const isAudioFile = (value: unknown): value is AudioFile => {
 
   const file = value as AudioFile;
   return (
+    (typeof file.id === "number" || file.id === null) &&
     (typeof file.name === "string" || file.name === null) &&
     (typeof file.full_path === "string" || file.full_path === null) &&
     (typeof file.size === "number" || file.size === null) &&

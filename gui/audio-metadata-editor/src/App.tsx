@@ -3,6 +3,7 @@ import './App.scss'
 import CurrentFileProvider from './context/CurrentFileContext';
 import TagFormProvider from './context/TagFormContext';
 import { BrowserRouter } from 'react-router';
+import SidebarProvider from "./context/SidebarContext";
 
 function App() {
   return (
@@ -10,7 +11,9 @@ function App() {
       <BrowserRouter>
         <CurrentFileProvider>
           <TagFormProvider>
-            <MainPage />
+            <SidebarProvider>
+              <MainPage />
+            </SidebarProvider>
           </TagFormProvider>
         </CurrentFileProvider>
       </BrowserRouter>

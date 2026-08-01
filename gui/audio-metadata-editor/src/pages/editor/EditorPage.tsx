@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 
-import BaseInfoSection from "../components/editor/BaseInfoSection";
-import EditorSection from "../components/editor/EditorSection";
-import StreamInfoSection from "../components/editor/StreamInfoSection";
-import TrackInfoSection from "../components/editor/TrackInfoSection";
-import { useCurrentFile } from "../context/CurrentFileContext";
+import BaseInfoSection from "../../components/editor/BaseInfoSection";
+import EditorSection from "../../components/editor/EditorSection";
+import StreamInfoSection from "../../components/editor/StreamInfoSection";
+import TrackInfoSection from "../../components/editor/TrackInfoSection";
+import { useCurrentFile } from "../../context/CurrentFileContext";
 
 type EditorPageTab = "editor" | "details";
 
@@ -32,14 +32,14 @@ function EditorPage() {
           <div className="d-flex rounded-pill border overflow-hidden bg-light p-1 mb-3 gap-2">
             <button
               type="button"
-              className={`btn btn-sm flex-grow-1 rounded-pill ${activeTab === "editor" ? "btn-dark" : "btn-light"}`}
+              className={`btn btn-sm flex-grow-1 rounded-pill ${activeTab === "editor" ? "btn-outline-primary" : "btn-light"}`}
               onClick={() => setActiveTab("editor")}
             >
               Edit
             </button>
             <button
               type="button"
-              className={`btn btn-sm flex-grow-1 rounded-pill ${activeTab === "details" ? "btn-dark" : "btn-light"}`}
+              className={`btn btn-sm flex-grow-1 rounded-pill ${activeTab === "details" ? "btn-outline-primary" : "btn-light"}`}
               onClick={() => setActiveTab("details")}
             >
               Details

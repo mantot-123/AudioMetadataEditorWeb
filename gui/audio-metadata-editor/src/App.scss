@@ -25,6 +25,13 @@ input.form-control {
     font-size: 0.9rem;
 }
 
+.sidebar-link {
+    border-bottom: 1px solid #ccc;
+    &:hover {
+        background-color: #ccc;
+    }
+}
+
 .custom-table-container {
     overflow: auto;
 }

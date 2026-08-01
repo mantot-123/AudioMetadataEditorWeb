@@ -1,33 +1,18 @@
-import StartPage from "../components/start-page/StartPage";
-import EditorPage from "./EditorPage";
+import EditorPage from "./editor/EditorPage";
 import CoreNavBar from "../components/core/CoreNavBar";
+import CoreSidebar from "../components/core/CoreSidebar";
 import FilesTable from "../components/core/FilesTable";
-import { useCurrentFile } from "../context/CurrentFileContext";
-import { useEffect } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router";
+
+import { useSidebar } from "../context/SidebarContext";
 
 function MainPage() {
-  const navigate = useNavigate();
-
-  const location = useLocation();
-  const { updateCurrentFileValue, resetCurrentFile } = useCurrentFile();
-
-  useEffect(() => {
-    if(location.pathname !== "/edit") {
-      resetCurrentFile();
-    }
-  }, [location.pathname, updateCurrentFileValue]);
-
-  const goBack = () => {
-    resetCurrentFile();
-    navigate("/");
-  };
-
+  const { sidebar, setSidebarEnabled } = useSidebar();
   return ( 
     <>
       <div className="d-flex flex-column vh-100 overflow-hidden">
         <CoreNavBar />
         <div className="d-flex flex-grow-1 overflow-auto">
+          { sidebar.enabled && <CoreSidebar /> }
           <div className="flex-grow-1 col-md-8">
             <FilesTable />
           </div>

@@ -62,6 +62,7 @@ def all_files():
             raise UserError(f"Directory {fulldir} does not exist.")
 
         all_files = []
+        id = 0
         for root, subdirs, files in os.walk(fulldir):
             for f in files:
                 if not os.path.splitext(f)[1].lower() in AUDIO_TYPES:
@@ -78,6 +79,7 @@ def all_files():
                 tag_reader = MutagenHandler(fpath)
                 metadata = {}
                 base_details = {
+                    "id": id,
                     "name": f,
                     "full_path": fpath,
                     "dir": dir,
@@ -88,8 +90,8 @@ def all_files():
                 }
 
                 details = base_details | metadata
-
                 all_files.append(details)
+                id += 1
         
         all_files.reverse()
 
@@ -158,6 +160,7 @@ def get_file():
         # base file info + metadata
         metadata = reader.read_metadata()
         base_details = {
+            "id": 0,
             "name": os.path.basename(filename),
             "full_path": fpath,
             "dir": dir,

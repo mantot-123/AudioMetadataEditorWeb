@@ -110,6 +110,13 @@ function FilesTable() {
               <th
                 className="fw-bold"
                 style={{ cursor: "pointer", userSelect: "none" }}
+                onClick={() => handleSort("id")}
+              >
+                #{getSortIndicator("id")}
+              </th>
+              <th
+                className="fw-bold"
+                style={{ cursor: "pointer", userSelect: "none" }}
                 onClick={() => handleSort("name")}
               >
                 File name{getSortIndicator("name")}
@@ -177,6 +184,7 @@ function FilesTable() {
                 updateCurrentFileValue("full_path", file.full_path);
               }}
               key={`${file.full_path ?? "file"}-${index}`}>
+                <td>{file.id == null ? "-" : (file.id + 1)}</td>
                 <td>{file.name ?? "-"}</td>
                 <td>{file.full_path ?? "-"}</td>
                 <td>{file.mime_type ?? "-"}</td>

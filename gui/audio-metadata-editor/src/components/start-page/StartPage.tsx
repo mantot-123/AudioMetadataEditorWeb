@@ -1,4 +1,3 @@
-import AudioFilesTable from "./AudioFilesTable";
 import FilesTable from "../core/FilesTable";
 
 function StartPage() {

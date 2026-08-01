@@ -13,6 +13,7 @@ type CurrentFileContextType = {
 }
 
 const INITIAL_FILE: AudioFile = {
+  id: null,
   name: null,
   full_path: null,
   size: null,
