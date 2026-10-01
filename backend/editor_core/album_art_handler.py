@@ -7,6 +7,7 @@ from mutagen.id3 import ID3, APIC, ID3NoHeaderError
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.asf import ASF, ASFByteArrayAttribute
 from .mappings import AUDIO_TAG_MAPPING, EXT_TO_TYPE
+from .user_error import UserError
 
 class AlbumArtHandler:
     def __init__(self, audio_src):
@@ -40,7 +41,7 @@ class AlbumArtHandler:
                 return self._get_asf_art()
 
             else:
-                raise Exception("Unsupported audio file type.")
+                raise UserError("Unsupported audio file type.")
 
         except Exception as e:
             traceback.print_exc()
@@ -54,7 +55,7 @@ class AlbumArtHandler:
             audio_id3 = ID3()
         
         if not audio_id3:
-            raise Exception(f"Could not open file {self.audio_src}")
+            raise UserError(f"Could not open file {self.audio_src}")
 
         tag_name = AUDIO_TAG_MAPPING["mp3"]["cover_art"]
 
@@ -82,7 +83,7 @@ class AlbumArtHandler:
         audio_mp4 = MP4(self.audio_src)
 
         if not audio_mp4:
-            raise Exception(f"Could not open file {self.audio_src}")
+            raise UserError(f"Could not open file {self.audio_src}")
 
         tag_name = AUDIO_TAG_MAPPING["mp4"]["cover_art"]
         tag = audio_mp4.get(tag_name)
@@ -108,7 +109,7 @@ class AlbumArtHandler:
         audio_asf = ASF(self.audio_src)
 
         if not audio_asf:
-            raise Exception(f"Could not open file {self.audio_src}")
+            raise UserError(f"Could not open file {self.audio_src}")
 
         tag_name = AUDIO_TAG_MAPPING["wma"]["cover_art"]
         tag = audio_asf.get(tag_name)
@@ -152,7 +153,7 @@ class AlbumArtHandler:
                 return self._set_asf_art(data)
 
             else:
-                raise Exception("Unsupported audio file type.")
+                raise UserError("Unsupported audio file type.")
 
         except Exception as e:
             traceback.print_exc()

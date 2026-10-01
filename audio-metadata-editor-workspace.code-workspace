@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "gui/audio-metadata-editor"
+		},
+		{
+			"path": "backend"
+		}
+	],
+	"settings": {}
+}

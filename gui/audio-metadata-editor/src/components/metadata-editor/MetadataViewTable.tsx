@@ -56,8 +56,8 @@ function MetadataViewTable() {
     { group: "File", name: "MIME type", value: fileInfo?.mime_type },
     { group: "File", name: "File extension", value: fileInfo?.file_ext },
     { group: "File", name: "File size", value: fileInfo ? formatFileSize(fileInfo?.size) : null },
-    { group: "File", name: "Date modified", value: fileInfo ? formatModifiedTime(fileInfo?.modify_time) : null }
-    ]
+    { group: "File", name: "Date modified", value: formatModifiedTime(fileInfo?.modify_time)}
+  ];
 
   const rowsStream = [
     { group: "Stream", name: "Format", value: fileInfo?.format },
